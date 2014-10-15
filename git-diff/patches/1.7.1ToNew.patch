@@ -1,0 +1,1454 @@
+diff --git a/bridge/testsrc/org/aspectj/bridge/MessageTest.java b/bridge/testsrc/org/aspectj/bridge/MessageTest.java
+index 19c5ee2..be30c48 100644
+--- a/bridge/testsrc/org/aspectj/bridge/MessageTest.java
++++ b/bridge/testsrc/org/aspectj/bridge/MessageTest.java
+@@ -46,12 +46,12 @@ public class MessageTest extends TestCase {
+ 		super(name);
+ 	}
+     
+-    void checkListOrder(List list, Comparator c) { // XXX util
++    <T> void checkListOrder(List<T> list, Comparator<T> c) { // XXX util
+         assertNotNull(list);
+         assertNotNull(c);
+-        ListIterator it = list.listIterator();
+-        Object last = null;
+-        Object current = null;
++        ListIterator<T> it = list.listIterator();
++        T last = null;
++        T current = null;
+         while (it.hasNext()) {
+             current = it.next();
+             if (null != last) {
+@@ -74,9 +74,9 @@ public class MessageTest extends TestCase {
+     public void testKind_isSameOrLessThan() {
+         IMessage.Kind last;
+         IMessage.Kind next = null;
+-        for (Iterator iter = IMessage.KINDS.iterator(); iter.hasNext();) {
++        for (Iterator<IMessage.Kind> iter = IMessage.KINDS.iterator(); iter.hasNext();) {
+             last = next;
+-            next = (IMessage.Kind) iter.next();
++            next = iter.next();
+             if (null == last) {
+                 continue;
+             }
+@@ -147,7 +147,7 @@ public class MessageTest extends TestCase {
+         String input = "input";
+         Throwable thrown = null;
+         ISourceLocation sl = null;
+-        Class exClass = null;
++        Class<?> exClass = null;
+         String descriptor = "Message"; // for make(...)
+         IMessage.Kind kind = IMessage.INFO;
+ 
+@@ -203,7 +203,7 @@ public class MessageTest extends TestCase {
+      */
+     protected void roundTrip(String input, IMessage.Kind kind,
+         Throwable thrown, ISourceLocation sourceLocation, 
+-        String descriptor, Class exClass) {
++        String descriptor, Class<?> exClass) {
+         try {
+             IMessage m = make(input, kind, thrown, sourceLocation, descriptor);
+             if ((null == input) && (null != thrown)) {
+@@ -251,7 +251,7 @@ class KindTest {
+             {  IMessage.ABORT, IMessage.DEBUG, IMessage.ERROR, 
+                 IMessage.INFO, IMessage.WARNING, IMessage.FAIL };
+ 
+-    static final List KINDLIST = Arrays.asList(KINDS);
++    static final List<IMessage.Kind> KINDLIST = Arrays.asList(KINDS);
+ 
+     /** used to clear instance BitSet */
+     static final BitSet UNSET = new BitSet(KINDS.length);
+diff --git a/docs/dist/doc/README-171.html b/docs/dist/doc/README-171.html
+new file mode 100644
+index 0000000..3fb9b25
+--- /dev/null
++++ b/docs/dist/doc/README-171.html
+@@ -0,0 +1,45 @@
++<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
++<html> <head>
++<title>AspectJ 1.7.1 Readme</title>
++<style type="text/css">
++<!--
++  P   { margin-left:  20px; }
++  PRE { margin-left:  20px; }
++  LI  { margin-left:  20px; }
++  H4  { margin-left:  20px; }
++  H3  { margin-left:  10px; }
++-->
++</style>
++</head>
++
++<body>
++<div align="right"><small>
++&copy; Copyright 2011 Contributors.
++All rights reserved.
++</small></div>
++
++<h1>AspectJ 1.7.1 Readme</h1>
++
++<p>The full list of resolved issues in 1.7.1 is available 
++<a href="https://bugs.eclipse.org/bugs/buglist.cgi?query_format=advanced;bug_status=RESOLVED;bug_status=VERIFIED;bug_status=CLOSED;product=AspectJ;target_milestone=1.7.1;">here</a></h2>.</p>
++
++<ul>
++<li>1.7.1 available 6-Sep-2012
++</ul>
++
++<h2>Changes</h2>
++<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=388971">388971</a> Double Synthetic attributes on some around advice members<br>
++<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=387718">387718</a> RuntimeException when trying to compile broken code<br>
++<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=387568">387568</a> Warning "Xlint:unresolvableMember" for enums<br>
++<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=387444">387444</a> Softening exception in try-with-resources<br>
++<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=386888">386888</a> spring-data hello-worlds sample fails to compile with 1.7.0<br>
++<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=386337">386337</a> Light AOP Parser does not support declare-annotation<br>
++<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=386049">386049</a> Error "must implement abstract inter-type declaration" even though build is fine<br>
++<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=384401">384401</a> NPE when no pointcut in afterthrowing annotation style advice<br>
++<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=384398">384398</a> Type Mismatch error when using inner classes contained in generic types within ITDs<br>
++<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=381906">381906</a> ASPECTJ Internal Compiler Error<br>
++<a href="https://bugs.eclipse.org/bugs/show_bug.cgi?id=73507">73507</a> Public ITD of fields on interfaces creates mangled members<br>
++</p>
++<!-- ============================== -->  
++</body>
++</html>
+diff --git a/docs/dist/doc/index.html b/docs/dist/doc/index.html
+index ecf92cb..9bb07cb 100644
+--- a/docs/dist/doc/index.html
++++ b/docs/dist/doc/index.html
+@@ -138,6 +138,7 @@
+ <tr> <td>README's
+      </td>
+      <td>Changes and porting guide for AspectJ 
++        <a href="README-171.html">1.7.1</a>,
+         <a href="README-170.html">1.7.0</a>,
+         <a href="README-1612.html">1.6.12</a>,
+         <a href="README-1611.html">1.6.11</a>,
+diff --git a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/AjPipeliningCompilerAdapter.java b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/AjPipeliningCompilerAdapter.java
+index 00f7f8d..6d334e7 100644
+--- a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/AjPipeliningCompilerAdapter.java
++++ b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/AjPipeliningCompilerAdapter.java
+@@ -431,6 +431,8 @@ public class AjPipeliningCompilerAdapter extends AbstractCompilerAdapter {
+ 		} else {
+ 			queueForWeaving(intRes);
+ 		}
++		
++		BcelWeaver.printStatistics(System.out);
+ 	}
+ 
+ 	private void queueForWeaving(InterimCompilationResult intRes) {
+diff --git a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/ast/ValidateAtAspectJAnnotationsVisitor.java b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/ast/ValidateAtAspectJAnnotationsVisitor.java
+index 506aabf..fa63a33 100644
+--- a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/ast/ValidateAtAspectJAnnotationsVisitor.java
++++ b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/ast/ValidateAtAspectJAnnotationsVisitor.java
+@@ -385,6 +385,11 @@ public class ValidateAtAspectJAnnotationsVisitor extends ASTVisitor {
+ 		try {
+ 			// +1 to give first char of pointcut string
+ 			ISourceContext context = new EclipseSourceContext(unit.compilationResult, pcLocation[0] + 1);
++			if (pointcutExpression == null) {
++				methodDeclaration.scope.problemReporter().signalError(methodDeclaration.sourceStart,
++						methodDeclaration.sourceEnd, "the advice annotation must specify a pointcut value");
++				return;
++			}
+ 			PatternParser pp = new PatternParser(pointcutExpression, context);
+ 			Pointcut pc = pp.parsePointcut();
+ 			pp.checkEof();
+diff --git a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/AjLookupEnvironment.java b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/AjLookupEnvironment.java
+index 64f1005..22e8fdf 100644
+--- a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/AjLookupEnvironment.java
++++ b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/AjLookupEnvironment.java
+@@ -426,8 +426,7 @@ public class AjLookupEnvironment extends LookupEnvironment implements AnonymousC
+ 	}
+ 
+ 	private void doPendingWeaves() {
+-		for (Iterator i = pendingTypesToWeave.iterator(); i.hasNext();) {
+-			SourceTypeBinding t = (SourceTypeBinding) i.next();
++		for (SourceTypeBinding t: pendingTypesToWeave) {
+ 			ContextToken tok = CompilationAndWeavingContext.enteringPhase(
+ 					CompilationAndWeavingContext.WEAVING_INTERTYPE_DECLARATIONS, t.sourceName);
+ 			weaveInterTypeDeclarations(t);
+@@ -862,10 +861,10 @@ public class AjLookupEnvironment extends LookupEnvironment implements AnonymousC
+ 	 * sourceType and onType are the 'same type' - the former is the 'Eclipse' version and the latter is the 'Weaver' version.
+ 	 */
+ 	private void processTypeMungersFromExistingWeaverState(SourceTypeBinding sourceType, ResolvedType onType) {
+-		Collection previouslyAppliedMungers = onType.getWeaverState().getTypeMungers(onType);
++		List<ConcreteTypeMunger> previouslyAppliedMungers = onType.getWeaverState().getTypeMungers(onType);
+ 
+-		for (Iterator i = previouslyAppliedMungers.iterator(); i.hasNext();) {
+-			ConcreteTypeMunger m = (ConcreteTypeMunger) i.next();
++		for (Iterator<ConcreteTypeMunger> i = previouslyAppliedMungers.iterator(); i.hasNext();) {
++			ConcreteTypeMunger m = i.next();
+ 			EclipseTypeMunger munger = factory.makeEclipseTypeMunger(m);
+ 			if (munger.munge(sourceType, onType)) {
+ 				if (onType.isInterface() && munger.getMunger().needsAccessToTopmostImplementor()) {
+@@ -885,8 +884,8 @@ public class AjLookupEnvironment extends LookupEnvironment implements AnonymousC
+ 		ResolvedType resolvedSourceType = factory.fromEclipse(sourceType);
+ 		List<ResolvedType> newParents = declareParents.findMatchingNewParents(resolvedSourceType, false);
+ 		if (!newParents.isEmpty()) {
+-			for (Iterator i = newParents.iterator(); i.hasNext();) {
+-				ResolvedType parent = (ResolvedType) i.next();
++			for (Iterator<ResolvedType> i = newParents.iterator(); i.hasNext();) {
++				ResolvedType parent = i.next();
+ 				if (dangerousInterfaces.containsKey(parent)) {
+ 					ResolvedType onType = factory.fromEclipse(sourceType);
+ 					factory.showMessage(IMessage.ERROR, onType + ": " + dangerousInterfaces.get(parent),
+@@ -919,7 +918,7 @@ public class AjLookupEnvironment extends LookupEnvironment implements AnonymousC
+ 		if ((bits & TagBits.AnnotationTargetMASK) == 0) {
+ 			return "";
+ 		}
+-		Set s = new HashSet();
++		Set<String> s = new HashSet<String>();
+ 		if ((bits & TagBits.AnnotationForAnnotationType) != 0) {
+ 			s.add("ANNOTATION_TYPE");
+ 		}
+@@ -946,8 +945,8 @@ public class AjLookupEnvironment extends LookupEnvironment implements AnonymousC
+ 		}
+ 		StringBuffer sb = new StringBuffer();
+ 		sb.append("{");
+-		for (Iterator iter = s.iterator(); iter.hasNext();) {
+-			String element = (String) iter.next();
++		for (Iterator<String> iter = s.iterator(); iter.hasNext();) {
++			String element = iter.next();
+ 			sb.append(element);
+ 			if (iter.hasNext()) {
+ 				sb.append(",");
+@@ -1288,33 +1287,33 @@ public class AjLookupEnvironment extends LookupEnvironment implements AnonymousC
+ 		return (abits & (TagBits.AnnotationForAnnotationType | TagBits.AnnotationForType)) == 0;
+ 	}
+ 
+-	private void reportDeclareParentsMessage(WeaveMessage.WeaveMessageKind wmk, SourceTypeBinding sourceType, ResolvedType parent) {
+-		if (!factory.getWorld().getMessageHandler().isIgnoring(IMessage.WEAVEINFO)) {
+-			String filename = new String(sourceType.getFileName());
+-
+-			int takefrom = filename.lastIndexOf('/');
+-			if (takefrom == -1) {
+-				takefrom = filename.lastIndexOf('\\');
+-			}
+-			filename = filename.substring(takefrom + 1);
+-
+-			factory.getWorld()
+-					.getMessageHandler()
+-					.handleMessage(
+-							WeaveMessage.constructWeavingMessage(wmk,
+-									new String[] { CharOperation.toString(sourceType.compoundName), filename,
+-											parent.getClassName(),
+-											getShortname(parent.getSourceLocation().getSourceFile().getPath()) }));
+-		}
+-	}
+-
+-	private String getShortname(String path) {
+-		int takefrom = path.lastIndexOf('/');
+-		if (takefrom == -1) {
+-			takefrom = path.lastIndexOf('\\');
+-		}
+-		return path.substring(takefrom + 1);
+-	}
++//	private void reportDeclareParentsMessage(WeaveMessage.WeaveMessageKind wmk, SourceTypeBinding sourceType, ResolvedType parent) {
++//		if (!factory.getWorld().getMessageHandler().isIgnoring(IMessage.WEAVEINFO)) {
++//			String filename = new String(sourceType.getFileName());
++//
++//			int takefrom = filename.lastIndexOf('/');
++//			if (takefrom == -1) {
++//				takefrom = filename.lastIndexOf('\\');
++//			}
++//			filename = filename.substring(takefrom + 1);
++//
++//			factory.getWorld()
++//					.getMessageHandler()
++//					.handleMessage(
++//							WeaveMessage.constructWeavingMessage(wmk,
++//									new String[] { CharOperation.toString(sourceType.compoundName), filename,
++//											parent.getClassName(),
++//											getShortname(parent.getSourceLocation().getSourceFile().getPath()) }));
++//		}
++//	}
++
++//	private String getShortname(String path) {
++//		int takefrom = path.lastIndexOf('/');
++//		if (takefrom == -1) {
++//			takefrom = path.lastIndexOf('\\');
++//		}
++//		return path.substring(takefrom + 1);
++//	}
+ 
+ 	private void addParent(SourceTypeBinding sourceType, ResolvedType parent) {
+ 		ReferenceBinding parentBinding = (ReferenceBinding) factory.makeTypeBinding(parent);
+diff --git a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/EclipseFactory.java b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/EclipseFactory.java
+index 154746f..14f667a 100644
+--- a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/EclipseFactory.java
++++ b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/EclipseFactory.java
+@@ -482,6 +482,12 @@ public class EclipseFactory {
+ 				}
+ 			}
+ 		}
++		for (ConcreteTypeMunger ctm: ret) {
++			ResolvedMember rm = ctm.getSignature();
++			if (rm!=null) {
++				rm.resolve(this.getWorld());
++			}
++		}
+ 		finishedTypeMungers = ret;
+ 	}
+ 
+diff --git a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/EclipseSourceType.java b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/EclipseSourceType.java
+index e254922..538057f 100644
+--- a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/EclipseSourceType.java
++++ b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/lookup/EclipseSourceType.java
+@@ -55,6 +55,7 @@ import org.aspectj.org.eclipse.jdt.internal.compiler.lookup.FieldBinding;
+ import org.aspectj.org.eclipse.jdt.internal.compiler.lookup.MethodBinding;
+ import org.aspectj.org.eclipse.jdt.internal.compiler.lookup.ReferenceBinding;
+ import org.aspectj.org.eclipse.jdt.internal.compiler.lookup.SourceTypeBinding;
++import org.aspectj.org.eclipse.jdt.internal.compiler.lookup.SyntheticMethodBinding;
+ import org.aspectj.org.eclipse.jdt.internal.compiler.lookup.TagBits;
+ import org.aspectj.org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
+ import org.aspectj.weaver.AbstractReferenceTypeDelegate;
+@@ -68,6 +69,7 @@ import org.aspectj.weaver.BCException;
+ import org.aspectj.weaver.EnumAnnotationValue;
+ import org.aspectj.weaver.ReferenceType;
+ import org.aspectj.weaver.ResolvedMember;
++import org.aspectj.weaver.ResolvedMemberImpl;
+ import org.aspectj.weaver.ResolvedPointcutDefinition;
+ import org.aspectj.weaver.ResolvedType;
+ import org.aspectj.weaver.StandardAnnotation;
+@@ -245,7 +247,7 @@ public class EclipseSourceType extends AbstractReferenceTypeDelegate {
+ 		List<ResolvedMember> declaredMethods = new ArrayList<ResolvedMember>();
+ 		List<ResolvedMember> declaredFields = new ArrayList<ResolvedMember>();
+ 
+-		binding.methods(); // the important side-effect of this call is to make
++		MethodBinding[] ms = binding.methods(); // the important side-effect of this call is to make
+ 		// sure bindings are completed
+ 		AbstractMethodDeclaration[] methods = declaration.methods;
+ 		if (methods != null) {
+@@ -306,6 +308,28 @@ public class EclipseSourceType extends AbstractReferenceTypeDelegate {
+ 				}
+ 			}
+ 		}
++		
++		if (isEnum()) {
++			// The bindings for the eclipse binding will include values/valueof
++			for (int m=0,len=ms.length;m<len;m++) {
++				MethodBinding mb = ms[m];
++				if ((mb instanceof SyntheticMethodBinding) && mb.isStatic()) { // cannot use .isSynthetic() because it isn't truly synthetic
++					if (CharOperation.equals(mb.selector,valuesCharArray) && mb.parameters.length==0 && mb.returnType.isArrayType() && ((ArrayBinding)mb.returnType).leafComponentType()==binding) {
++						// static <EnumType>[] values()
++						ResolvedMember valuesMember = factory.makeResolvedMember(mb);
++						valuesMember.setSourceContext(new EclipseSourceContext(unit.compilationResult, 0));
++						valuesMember.setPosition(0, 0);
++						declaredMethods.add(valuesMember);
++					} else if (CharOperation.equals(mb.selector,valueOfCharArray) && mb.parameters.length==1 && CharOperation.equals(mb.parameters[0].signature(),jlString) && mb.returnType==binding) {
++						// static <EnumType> valueOf(String)
++						ResolvedMember valueOfMember = factory.makeResolvedMember(mb);
++						valueOfMember.setSourceContext(new EclipseSourceContext(unit.compilationResult, 0));
++						valueOfMember.setPosition(0, 0);
++						declaredMethods.add(valueOfMember);
++					}
++				}
++			}
++		}
+ 
+ 		FieldBinding[] fields = binding.fields();
+ 		for (int i = 0, len = fields.length; i < len; i++) {
+@@ -317,6 +341,11 @@ public class EclipseSourceType extends AbstractReferenceTypeDelegate {
+ 		this.declaredMethods = declaredMethods.toArray(new ResolvedMember[declaredMethods.size()]);
+ 		this.declaredFields = declaredFields.toArray(new ResolvedMember[declaredFields.size()]);
+ 	}
++	
++	private final static char[] valuesCharArray = "values".toCharArray();
++	private final static char[] valueOfCharArray = "valueOf".toCharArray();
++	private final static char[] jlString = "Ljava/lang/String;".toCharArray();
++	
+ 
+ 	private ResolvedPointcutDefinition makeResolvedPointcutDefinition(AbstractMethodDeclaration md) {
+ 		if (md.binding == null) {
+diff --git a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/problem/AjProblemReporter.java b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/problem/AjProblemReporter.java
+index 6ce4a5e..2808b34 100644
+--- a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/problem/AjProblemReporter.java
++++ b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/problem/AjProblemReporter.java
+@@ -62,6 +62,7 @@ import org.aspectj.weaver.ConcreteTypeMunger;
+ import org.aspectj.weaver.ReferenceType;
+ import org.aspectj.weaver.ResolvedMember;
+ import org.aspectj.weaver.ResolvedType;
++import org.aspectj.weaver.ResolvedTypeMunger;
+ import org.aspectj.weaver.Shadow;
+ import org.aspectj.weaver.UnresolvedType;
+ import org.aspectj.weaver.patterns.DeclareAnnotation;
+@@ -99,8 +100,9 @@ public class AjProblemReporter extends ProblemReporter {
+ 			// System.err.println("about to show error for unhandled exception: " + new String(exceptionType.sourceName()) +
+ 			// " at " + location + " in " + referenceContext);
+ 
+-			for (Iterator i = factory.getWorld().getDeclareSoft().iterator(); i.hasNext();) {
+-				DeclareSoft d = (DeclareSoft) i.next();
++			for (DeclareSoft d: factory.getWorld().getDeclareSoft()) {
++//			for (Iterator<DeclareSoft> i = factory.getWorld().getDeclareSoft().iterator(); i.hasNext();) {
++//				DeclareSoft d = (DeclareSoft) i.next();
+ 				// We need the exceptionType to match the type in the declare soft statement
+ 				// This means it must either be the same type or a subtype
+ 				ResolvedType throwException = factory.fromEclipse((ReferenceBinding) exceptionType);
+@@ -138,6 +140,60 @@ public class AjProblemReporter extends ProblemReporter {
+ 
+ 		super.unhandledException(exceptionType, location);
+ 	}
++	
++	public void unhandledExceptionFromAutoClose(TypeBinding exceptionType, ASTNode location) {
++		if (!factory.getWorld().getDeclareSoft().isEmpty()) {
++			Shadow callSite = factory.makeShadow(location, referenceContext);
++			Shadow enclosingExec = factory.makeShadow(referenceContext);
++			// PR 72157 - calls to super / this within a constructor are not part of the cons join point.
++			if ((callSite == null) && (enclosingExec.getKind() == Shadow.ConstructorExecution)
++					&& (location instanceof ExplicitConstructorCall)) {
++				super.unhandledException(exceptionType, location);
++				return;
++			}
++			// System.err.println("about to show error for unhandled exception: " + new String(exceptionType.sourceName()) +
++			// " at " + location + " in " + referenceContext);
++
++			for (DeclareSoft d: factory.getWorld().getDeclareSoft()) {
++//			for (Iterator<DeclareSoft> i = factory.getWorld().getDeclareSoft().iterator(); i.hasNext();) {
++//				DeclareSoft d = (DeclareSoft) i.next();
++				// We need the exceptionType to match the type in the declare soft statement
++				// This means it must either be the same type or a subtype
++				ResolvedType throwException = factory.fromEclipse((ReferenceBinding) exceptionType);
++				FuzzyBoolean isExceptionTypeOrSubtype = d.getException().matchesInstanceof(throwException);
++				if (!isExceptionTypeOrSubtype.alwaysTrue())
++					continue;
++
++				if (callSite != null) {
++					FuzzyBoolean match = d.getPointcut().match(callSite);
++					if (match.alwaysTrue()) {
++						// System.err.println("matched callSite: " + callSite + " with " + d);
++						return;
++					} else if (!match.alwaysFalse()) {
++						// !!! need this check to happen much sooner
++						// throw new RuntimeException("unimplemented, shouldn't have fuzzy match here");
++					}
++				}
++				if (enclosingExec != null) {
++					FuzzyBoolean match = d.getPointcut().match(enclosingExec);
++					if (match.alwaysTrue()) {
++						// System.err.println("matched enclosingExec: " + enclosingExec + " with " + d);
++						return;
++					} else if (!match.alwaysFalse()) {
++						// !!! need this check to happen much sooner
++						// throw new RuntimeException("unimplemented, shouldn't have fuzzy match here");
++					}
++				}
++			}
++		}
++
++		// ??? is this always correct
++		if (location instanceof Proceed) {
++			return;
++		}
++
++		super.unhandledExceptionFromAutoClose(exceptionType, location);
++	}
+ 
+ 	private boolean isPointcutDeclaration(MethodBinding binding) {
+ 		return CharOperation.prefixEquals(PointcutDeclaration.mangledPrefix, binding.selector);
+@@ -372,9 +428,12 @@ public class AjProblemReporter extends ProblemReporter {
+ 		// affects other code in the problem reporter that looks through ITDs...
+ 		ResolvedType supertypeToLookAt = onTypeX.getSuperclass();
+ 		while (supertypeToLookAt != null) {
+-			List itMungers = supertypeToLookAt.getInterTypeMungers();
+-			for (Iterator i = itMungers.iterator(); i.hasNext();) {
++			List<ConcreteTypeMunger> itMungers = supertypeToLookAt.getInterTypeMungers();
++			for (Iterator<ConcreteTypeMunger> i = itMungers.iterator(); i.hasNext();) {
+ 				ConcreteTypeMunger m = (ConcreteTypeMunger) i.next();
++				if (m.getMunger()!=null && m.getMunger().getKind()== ResolvedTypeMunger.PrivilegedAccess) {
++					continue;
++				}
+ 				ResolvedMember sig = m.getSignature();
+ 				if (sig == null)
+ 					continue; // we aren't interested in other kinds of munger
+diff --git a/org.aspectj.matcher/src/org/aspectj/weaver/NameMangler.java b/org.aspectj.matcher/src/org/aspectj/weaver/NameMangler.java
+index f916268..9e0b458 100644
+--- a/org.aspectj.matcher/src/org/aspectj/weaver/NameMangler.java
++++ b/org.aspectj.matcher/src/org/aspectj/weaver/NameMangler.java
+@@ -337,7 +337,13 @@ public class NameMangler {
+ 		ret.append(getExtractableName(shadowSig)).append("_aroundBody").append(suffixTag).append("$advice");
+ 		return ret.toString();
+ 	}
+-
++	
++	public static String aroundForwardMethodName(Member shadowSig, String suffixTag) {
++		StringBuffer ret = new StringBuffer();
++		ret.append(getExtractableName(shadowSig)).append("_aroundBody").append(suffixTag).append("$forward");
++		return ret.toString();
++	}
++	
+ 	public static String getExtractableName(Member shadowSignature) {
+ 		String name = shadowSignature.getName();
+ 		MemberKind kind = shadowSignature.getKind();
+diff --git a/org.aspectj.matcher/src/org/aspectj/weaver/ResolvedMemberImpl.java b/org.aspectj.matcher/src/org/aspectj/weaver/ResolvedMemberImpl.java
+index 0f82f04..6ddf51b 100644
+--- a/org.aspectj.matcher/src/org/aspectj/weaver/ResolvedMemberImpl.java
++++ b/org.aspectj.matcher/src/org/aspectj/weaver/ResolvedMemberImpl.java
+@@ -30,6 +30,7 @@ import org.aspectj.bridge.ISourceLocation;
+ public class ResolvedMemberImpl extends MemberImpl implements IHasPosition, ResolvedMember {
+ 
+ 	private String[] parameterNames = null;
++	private boolean isResolved = false;
+ 	protected UnresolvedType[] checkedExceptions = UnresolvedType.NONE;
+ 
+ 	/**
+@@ -568,6 +569,9 @@ public class ResolvedMemberImpl extends MemberImpl implements IHasPosition, Reso
+ 	// something different to world.resolve(member)
+ 	@Override
+ 	public ResolvedMember resolve(World world) {
++		if (isResolved) {
++			return this;
++		}
+ 		// make sure all the pieces of a resolvedmember really are resolved
+ 		try {
+ 			if (typeVariables != null && typeVariables.length > 0) {
+@@ -601,6 +605,7 @@ public class ResolvedMemberImpl extends MemberImpl implements IHasPosition, Reso
+ 		} finally {
+ 			world.setTypeVariableLookupScope(null);
+ 		}
++		isResolved = true;
+ 		return this;
+ 	}
+ 
+diff --git a/org.aspectj.matcher/src/org/aspectj/weaver/ResolvedType.java b/org.aspectj.matcher/src/org/aspectj/weaver/ResolvedType.java
+index 366f16b..b9fe12a 100644
+--- a/org.aspectj.matcher/src/org/aspectj/weaver/ResolvedType.java
++++ b/org.aspectj.matcher/src/org/aspectj/weaver/ResolvedType.java
+@@ -1445,7 +1445,7 @@ public abstract class ResolvedType extends UnresolvedType implements AnnotatedEl
+ 		}
+ 
+ 		for (ConcreteTypeMunger munger : getInterTypeMungersIncludingSupers()) {
+-			if (munger.getSignature() != null && munger.getSignature().isAbstract()) { // Rule 1
++			if (munger.getSignature() != null && munger.getSignature().isAbstract() && munger.getMunger().getKind()!=ResolvedTypeMunger.PrivilegedAccess) { // Rule 1
+ 				if (munger.getMunger().getKind() == ResolvedTypeMunger.MethodDelegate2) {
+ 					// ignore for @AJ ITD as munger.getSignature() is the
+ 					// interface method hence abstract
+@@ -1977,8 +1977,7 @@ public abstract class ResolvedType extends UnresolvedType implements AnnotatedEl
+ 	 *         an additional source location.
+ 	 */
+ 	public boolean checkLegalOverride(ResolvedMember parent, ResolvedMember child, int transformerPosition, ResolvedType aspectType) {
+-		// System.err.println("check: " + child.getDeclaringType() +
+-		// " overrides " + parent.getDeclaringType());
++		// System.err.println("check: " + child.getDeclaringType() + " overrides " + parent.getDeclaringType());
+ 		if (Modifier.isFinal(parent.getModifiers())) {
+ 			// If the ITD matching is occurring due to pulling in a BinaryTypeBinding then this check can incorrectly
+ 			// signal an error because the ITD transformer being examined here will exactly match the member it added
+@@ -1993,10 +1992,8 @@ public abstract class ResolvedType extends UnresolvedType implements AnnotatedEl
+ 					List<ConcreteTypeMunger> transformersOnThisType = wsi.getTypeMungers(nonItdDeclaringType);
+ 					if (transformersOnThisType != null) {
+ 						for (ConcreteTypeMunger transformer : transformersOnThisType) {
+-							// relatively crude check - is the ITD
+-							// for the same as the existingmember
+-							// and does it come
+-							// from the same aspect
++							// relatively crude check - is the ITD for the same as the existingmember
++							// and does it come from the same aspect
+ 							if (transformer.aspectType.equals(aspectType)) {
+ 								if (parent.equalsApartFromDeclaringType(transformer.getSignature())) {
+ 									return true;
+@@ -2027,7 +2024,10 @@ public abstract class ResolvedType extends UnresolvedType implements AnnotatedEl
+ 			// !rtParentReturnType.isAssignableFrom(rtChildReturnType);
+ 			// }
+ 		} else {
+-			incompatibleReturnTypes = !parent.getReturnType().equals(child.getReturnType());
++			ResolvedType rtParentReturnType = parent.resolve(world).getGenericReturnType().resolve(world);
++			ResolvedType rtChildReturnType = child.resolve(world).getGenericReturnType().resolve(world);
++			
++			incompatibleReturnTypes = !rtParentReturnType.equals(rtChildReturnType);
+ 		}
+ 
+ 		if (incompatibleReturnTypes) {
+diff --git a/org.aspectj.matcher/src/org/aspectj/weaver/Shadow.java b/org.aspectj.matcher/src/org/aspectj/weaver/Shadow.java
+index e0e85b6..19915b5 100644
+--- a/org.aspectj.matcher/src/org/aspectj/weaver/Shadow.java
++++ b/org.aspectj.matcher/src/org/aspectj/weaver/Shadow.java
+@@ -537,7 +537,7 @@ public abstract class Shadow {
+ 			this.mungers.add(munger);
+ 		}
+ 	}
+-
++	
+ 	public final void implement() {
+ 		sortMungers();
+ 		if (mungers == null) {
+@@ -628,11 +628,22 @@ public abstract class Shadow {
+ 	/** Actually implement the (non-empty) mungers associated with this shadow */
+ 	private void implementMungers() {
+ 		World world = getIWorld();
++		boolean woven = false;
+ 		for (ShadowMunger munger : mungers) {
+ 			if (munger.implementOn(this)) {
+ 				world.reportMatch(munger, this);
++				
++				if (world.isXmonitoringStatistics()) {
++					System.err.println("MOPSTAT: event-firing-sites\t" + munger.toString());
++					woven = true;
++				}
+ 			}
+ 		}
++		
++		if (world.isXmonitoringStatistics()) {
++			if (woven)
++				System.err.println("MOPSTAT: woven-shadows\t" + this.toString());
++		}
+ 	}
+ 
+ 	public abstract ISourceLocation getSourceLocation();
+diff --git a/org.aspectj.matcher/src/org/aspectj/weaver/World.java b/org.aspectj.matcher/src/org/aspectj/weaver/World.java
+index 960b059..7f9062b 100644
+--- a/org.aspectj.matcher/src/org/aspectj/weaver/World.java
++++ b/org.aspectj.matcher/src/org/aspectj/weaver/World.java
+@@ -89,6 +89,15 @@ public abstract class World implements Dump.INode {
+ 
+ 	/** XnoInline option setting passed down to weaver */
+ 	private boolean XnoInline;
++	
++	/** XalwaysWeaveAround option setting passed down to weaver */
++	private boolean XalwaysWeaveAround = true;
++	
++	/** XmergeForwardFunctions option setting passed down to weaver */
++	private boolean XmergeForwardFunctions = false;
++	
++	/** XmonitoringStatistics option setting passed down to weaver */
++	private boolean XmonitoringStatistics = false;
+ 
+ 	/** XlazyTjp option setting passed down to weaver */
+ 	private boolean XlazyTjp;
+@@ -807,6 +816,26 @@ public abstract class World implements Dump.INode {
+ 	public void setXnoInline(boolean xnoInline) {
+ 		XnoInline = xnoInline;
+ 	}
++	
++	public boolean isXalwaysWeaveAround() {
++		return XalwaysWeaveAround;
++	}
++	
++	public boolean isXmergeForwardFunctions() {
++		return XmergeForwardFunctions;
++	}
++	
++	public boolean isXmonitoringStatistics() {
++		return XmonitoringStatistics;
++	}
++	
++	public void setXalwaysWeaveAround(boolean xalwaysWeaveAround) {
++		XalwaysWeaveAround = xalwaysWeaveAround;
++	}
++	
++	public void setXmergeForwardFunctions(boolean xmergeforwardfunctions) {
++		XmergeForwardFunctions = xmergeforwardfunctions;
++	}
+ 
+ 	public boolean isXlazyTjp() {
+ 		return XlazyTjp;
+diff --git a/org.aspectj.matcher/testsrc/org/aspectj/weaver/patterns/ParserTestCase.java b/org.aspectj.matcher/testsrc/org/aspectj/weaver/patterns/ParserTestCase.java
+index 902e41c..7ffad81 100644
+--- a/org.aspectj.matcher/testsrc/org/aspectj/weaver/patterns/ParserTestCase.java
++++ b/org.aspectj.matcher/testsrc/org/aspectj/weaver/patterns/ParserTestCase.java
+@@ -698,13 +698,13 @@ public class ParserTestCase extends PatternsTestCase {
+ 			fail("Expected WildAnnotationTypePattern but was " + atp.getClass());
+ 		}
+ 		WildAnnotationTypePattern watp = (WildAnnotationTypePattern) atp;
+-		Map m = watp.annotationValues;
+-		Set keys = m.keySet();
+-		List orderedKeys = new ArrayList();
++		Map<String,String> m = watp.annotationValues;
++		Set<String> keys = m.keySet();
++		List<String> orderedKeys = new ArrayList<String>();
+ 		orderedKeys.addAll(keys);
+ 		Collections.sort(orderedKeys);
+ 		StringBuffer sb = new StringBuffer();
+-		for (Iterator iterator = orderedKeys.iterator(); iterator.hasNext();) {
++		for (Iterator<String> iterator = orderedKeys.iterator(); iterator.hasNext();) {
+ 			String object = (String) iterator.next();
+ 			sb.append(object).append("=").append(m.get(object));
+ 			if (iterator.hasNext()) {
+diff --git a/org.eclipse.jdt.core/jdtcore-for-aspectj-src.zip b/org.eclipse.jdt.core/jdtcore-for-aspectj-src.zip
+index 619a7f9..3f0b8c0 100644
+Binary files a/org.eclipse.jdt.core/jdtcore-for-aspectj-src.zip and b/org.eclipse.jdt.core/jdtcore-for-aspectj-src.zip differ
+diff --git a/org.eclipse.jdt.core/jdtcore-for-aspectj.jar b/org.eclipse.jdt.core/jdtcore-for-aspectj.jar
+index 82b35f6..675d5a2 100644
+Binary files a/org.eclipse.jdt.core/jdtcore-for-aspectj.jar and b/org.eclipse.jdt.core/jdtcore-for-aspectj.jar differ
+diff --git a/tests/bugs171/pr384401/X.java b/tests/bugs171/pr384401/X.java
+new file mode 100644
+index 0000000..e9a70ee
+--- /dev/null
++++ b/tests/bugs171/pr384401/X.java
+@@ -0,0 +1,15 @@
++import org.aspectj.lang.JoinPoint;
++import org.aspectj.lang.annotation.AfterThrowing;
++import org.aspectj.lang.annotation.Aspect;
++
++@Aspect
++public class X {
++//	@AfterThrowing(pointcut="execution(* *(..))",throwing = "e")
++	@AfterThrowing(throwing = "e")
++    public void bizLoggerWithException(JoinPoint thisJoinPoint,Throwable e) {
++  //  .....// do some stuff
++    }
++
++}
++
++class BizLoggable {}
+diff --git a/tests/bugs171/pr386049/de/scrum_master/galileo/LoggingAspect.aj b/tests/bugs171/pr386049/de/scrum_master/galileo/LoggingAspect.aj
+new file mode 100755
+index 0000000..ee45206
+--- /dev/null
++++ b/tests/bugs171/pr386049/de/scrum_master/galileo/LoggingAspect.aj
+@@ -0,0 +1,11 @@
++package de.scrum_master.galileo;
++
++import de.scrum_master.galileo.filter.BasicFilter;
++
++privileged aspect LoggingAspect
++{
++	void around(BasicFilter filter) : execution(* BasicFilter.run()) && this(filter) {
++		filter.getLogMessage(); proceed(filter);
++	}
++
++}
+diff --git a/tests/bugs171/pr386049/de/scrum_master/galileo/filter/BasicFilter.java b/tests/bugs171/pr386049/de/scrum_master/galileo/filter/BasicFilter.java
+new file mode 100755
+index 0000000..0d6aac6
+--- /dev/null
++++ b/tests/bugs171/pr386049/de/scrum_master/galileo/filter/BasicFilter.java
+@@ -0,0 +1,10 @@
++package de.scrum_master.galileo.filter;
++
++
++public abstract class BasicFilter 
++{
++	protected abstract String getLogMessage();
++  public void run() {
++    System.out.println("run()");
++  }
++}
+diff --git a/tests/bugs171/pr386049/de/scrum_master/galileo/filter/JsoupFilter.java b/tests/bugs171/pr386049/de/scrum_master/galileo/filter/JsoupFilter.java
+new file mode 100755
+index 0000000..da14ff7
+--- /dev/null
++++ b/tests/bugs171/pr386049/de/scrum_master/galileo/filter/JsoupFilter.java
+@@ -0,0 +1,17 @@
++package de.scrum_master.galileo.filter;
++
++
++public class JsoupFilter extends BasicFilter {
++	@Override
++	protected String getLogMessage() {
++      System.out.println("JsoupFilter.getLogMessage()");
++		return "Cleaning up HTML, removing clutter, fixing structure";
++	}
++
++  public static void main(String []argv) {
++    new JsoupFilter().run();
++  }
++
++
++
++}
+diff --git a/tests/bugs171/pr387444/Code.java b/tests/bugs171/pr387444/Code.java
+new file mode 100644
+index 0000000..4407908
+--- /dev/null
++++ b/tests/bugs171/pr387444/Code.java
+@@ -0,0 +1,12 @@
++import java.io.*;
++
++public class Code {
++  public void m() { // throws IOException {
++    try (FileReader reader = new FileReader("test.txt")) {
++      System.out.println("");
++    }
++  }
++}
++aspect X {
++  declare soft: IOException: within(*);
++}
+diff --git a/tests/bugs171/pr387444/Code2.java b/tests/bugs171/pr387444/Code2.java
+new file mode 100644
+index 0000000..6bc83d3
+--- /dev/null
++++ b/tests/bugs171/pr387444/Code2.java
+@@ -0,0 +1,33 @@
++import java.io.*;
++import org.aspectj.lang.*;
++
++public class Code2 {
++  public static void main(String[]argv) {
++    try {
++      new Code2().m();
++    } catch (SoftException se) {
++      System.out.println(se.getWrappedThrowable().getMessage());
++    }
++  }
++  
++  public void m() { 
++    try (MyReader reader = new MyReader()) {
++      System.out.println("");
++    }
++  }
++}
++aspect X {
++  declare soft: MyException: within(Code2);
++}
++
++class MyReader implements AutoCloseable {
++  public void close() throws MyException {
++    throw new MyException("foo");
++  }
++}
++
++class MyException extends Exception {
++  public MyException(String s) {
++	super(s);
++  }
++}
+diff --git a/tests/bugs171/pr387568/Code.java b/tests/bugs171/pr387568/Code.java
+new file mode 100644
+index 0000000..8b86a3a
+--- /dev/null
++++ b/tests/bugs171/pr387568/Code.java
+@@ -0,0 +1,17 @@
++import java.lang.annotation.*;
++
++class AAA {
++  public void m() {
++    Color[] cs = Color.values();
++    Color c = Color.valueOf("R");
++  }
++}
++
++@Anno
++aspect Foo {
++  after(): @annotation(Anno) {}
++}
++
++@Retention(RetentionPolicy.RUNTIME)
++@interface Anno {}
++
+diff --git a/tests/bugs171/pr387568/Color.java b/tests/bugs171/pr387568/Color.java
+new file mode 100644
+index 0000000..39d74a8
+--- /dev/null
++++ b/tests/bugs171/pr387568/Color.java
+@@ -0,0 +1,2 @@
++
++enum Color {R,G,B;}
+diff --git a/tests/src/org/aspectj/systemtest/ajc171/Ajc171Tests.java b/tests/src/org/aspectj/systemtest/ajc171/Ajc171Tests.java
+index a8dc9a6..c21fc77 100644
+--- a/tests/src/org/aspectj/systemtest/ajc171/Ajc171Tests.java
++++ b/tests/src/org/aspectj/systemtest/ajc171/Ajc171Tests.java
+@@ -20,7 +20,19 @@ import org.aspectj.testing.XMLBasedAjcTestCase;
+  * @author Andy Clement
+  */ 
+ public class Ajc171Tests extends org.aspectj.testing.XMLBasedAjcTestCase {
+-
++	
++	public void testNpe_pr384401() {
++		runTest("npe");
++	}
++	
++	public void testUnresolvableEnum_pr387568() {
++		runTest("unresolvable enum");
++	}
++	
++	public void testAbstractItds_pr386049() {
++		runTest("itd abstract");
++	}
++	
+ 	public void testPublicITDFs_pr73507_1() {
+ 		runTest("public ITDfs - 1");
+ 	}
+diff --git a/tests/src/org/aspectj/systemtest/ajc171/Ajc171Tests_need17jre.java b/tests/src/org/aspectj/systemtest/ajc171/Ajc171Tests_need17jre.java
+new file mode 100644
+index 0000000..d6faaa5
+--- /dev/null
++++ b/tests/src/org/aspectj/systemtest/ajc171/Ajc171Tests_need17jre.java
+@@ -0,0 +1,43 @@
++/*******************************************************************************
++ * Copyright (c) 2012 Contributors
++ * All rights reserved. This program and the accompanying materials
++ * are made available under the terms of the Eclipse Public License v1.0
++ * which accompanies this distribution, and is available at
++ * http://www.eclipse.org/legal/epl-v10.html
++ *
++ * Contributors:
++ *    Andy Clement - initial API and implementation
++ *******************************************************************************/
++package org.aspectj.systemtest.ajc171;
++
++import java.io.File;
++
++import junit.framework.Test;
++
++import org.aspectj.testing.XMLBasedAjcTestCase;
++
++/**
++ * @author Andy Clement
++ */ 
++public class Ajc171Tests_need17jre extends org.aspectj.testing.XMLBasedAjcTestCase {
++
++	public void testSoft17_pr387444() {
++		runTest("soft 17");
++	}
++	
++	public void testSoft17_pr387444_2() {
++		runTest("soft 17 2");
++	}
++
++	// ---
++
++	public static Test suite() {
++		return XMLBasedAjcTestCase.loadSuite(Ajc171Tests_need17jre.class);
++	}
++
++	@Override
++	protected File getSpecFile() {
++		return new File("../tests/src/org/aspectj/systemtest/ajc171/ajc171.xml");
++	}
++
++}
+diff --git a/tests/src/org/aspectj/systemtest/ajc171/ajc171.xml b/tests/src/org/aspectj/systemtest/ajc171/ajc171.xml
+index d24aa9a..d9a7651 100644
+--- a/tests/src/org/aspectj/systemtest/ajc171/ajc171.xml
++++ b/tests/src/org/aspectj/systemtest/ajc171/ajc171.xml
+@@ -2,6 +2,39 @@
+ 
+ <suite>
+ 
++	<ajc-test dir="bugs171/pr384401" title="npe">
++      <compile files="X.java" options="-1.5">
++      	<message kind="error" line="9" text="the advice annotation must specify a pointcut value"/>
++      </compile>
++    </ajc-test>
++
++	<ajc-test dir="bugs171/pr387444" title="soft 17">
++      <compile files="Code.java" options="-1.7"/>
++    </ajc-test>
++
++	<ajc-test dir="bugs171/pr387444" title="soft 17 2">
++      <compile files="Code2.java" options="-1.7"/>
++      <run class="Code2">
++        <stdout>
++          <line text="foo"/>
++        </stdout>
++      </run>
++    </ajc-test>
++
++	<ajc-test dir="bugs171/pr387568" title="unresolvable enum">
++      <compile files="Color.java Code.java" options="-1.5"/>
++    </ajc-test>
++
++    <ajc-test dir="bugs171/pr386049" title="itd abstract">
++      <compile files="de/scrum_master/galileo/filter/BasicFilter.java de/scrum_master/galileo/filter/JsoupFilter.java de/scrum_master/galileo/LoggingAspect.aj" options="-1.5"/>
++      <run class="de.scrum_master.galileo.filter.JsoupFilter">
++        <stdout>
++          <line text="JsoupFilter.getLogMessage()"/>
++          <line text="run()"/>
++        </stdout>
++      </run>
++    </ajc-test>
++
+     <ajc-test dir="bugs171/pr73507" title="public ITDfs - 1">
+       <compile files="Case1.java" options="-1.5"/>
+       <run class="Case1">
+diff --git a/weaver/src/org/aspectj/weaver/bcel/BcelClassWeaver.java b/weaver/src/org/aspectj/weaver/bcel/BcelClassWeaver.java
+index fbeb09e..b3254cb 100644
+--- a/weaver/src/org/aspectj/weaver/bcel/BcelClassWeaver.java
++++ b/weaver/src/org/aspectj/weaver/bcel/BcelClassWeaver.java
+@@ -12,6 +12,7 @@
+ 
+ package org.aspectj.weaver.bcel;
+ 
++import java.io.PrintStream;
+ import java.lang.reflect.Modifier;
+ import java.util.ArrayList;
+ import java.util.Collections;
+@@ -487,13 +488,28 @@ class BcelClassWeaver implements IClassWeaver {
+ 				isChanged = true;
+ 			}
+ 		}
+-
+-		// now we weave all but the initialization shadows
+-		for (LazyMethodGen methodGen : methodGens) {
+-			if (!methodGen.hasBody()) {
+-				continue;
++		
++		if (world.isXalwaysWeaveAround()) {
++			ForwardMethodGenerator forwardpool = ForwardMethodGenerator.getSingleton();
++			forwardpool.setMerge(world.isXmergeForwardFunctions());
++			List<LazyMethodGen> wrappers = new ArrayList<LazyMethodGen>();
++			for (LazyMethodGen methodGen : methodGens) {
++				if (methodGen.hasBody())
++					implementOrReplaceShadowByWrapper(methodGen, wrappers, forwardpool);
++			}
++			
++			for (LazyMethodGen wrapper : wrappers) {
++				match(wrapper, true);
++				implement(wrapper);
++			}
++		} else {
++			// now we weave all but the initialization shadows
++			for (LazyMethodGen methodGen : methodGens) {
++				if (!methodGen.hasBody()) {
++					continue;
++				}
++				implement(methodGen);
+ 			}
+-			implement(methodGen);
+ 		}
+ 
+ 		// if we matched any initialization shadows, we inline and weave
+@@ -2504,8 +2520,12 @@ class BcelClassWeaver implements IClassWeaver {
+ 	}
+ 
+ 	// ----
+-
++	
+ 	private boolean match(LazyMethodGen mg) {
++		return match(mg, false);
++	}
++
++	private boolean match(LazyMethodGen mg, boolean forceweave) {
+ 		BcelShadow enclosingShadow;
+ 		List<BcelShadow> shadowAccumulator = new ArrayList<BcelShadow>();
+ 		boolean isOverweaving = world.isOverWeaving();
+@@ -2513,7 +2533,7 @@ class BcelClassWeaver implements IClassWeaver {
+ 		// we want to match ajsynthetic constructors...
+ 		if (startsAngly && mg.getName().equals("<init>")) {
+ 			return matchInit(mg, shadowAccumulator);
+-		} else if (!shouldWeaveBody(mg)) {
++		} else if (!forceweave && !shouldWeaveBody(mg)) {
+ 			return false;
+ 		} else {
+ 			if (startsAngly && mg.getName().equals("<clinit>")) {
+@@ -3204,6 +3224,45 @@ class BcelClassWeaver implements IClassWeaver {
+ 	}
+ 
+ 	// ----
++	
++	private void implementOrReplaceShadowByWrapper(LazyMethodGen mg, List<LazyMethodGen> wrappers, ForwardMethodGenerator forwardpool) {
++		List<BcelShadow> shadows = mg.matchedShadows;
++		if (shadows == null) {
++			return;
++		}
++		
++		// An interface cannot have a method.
++		boolean suppress = mg.getEnclosingClass().isInterface();
++		
++		for (BcelShadow shadow : shadows) {
++			ContextToken tok = CompilationAndWeavingContext.enteringPhase(CompilationAndWeavingContext.IMPLEMENTING_ON_SHADOW,
++					shadow);
++			
++			boolean needwrapper = false;
++			if (!suppress) {
++				Shadow.Kind kind = shadow.getKind();
++				needwrapper =
++					kind == Shadow.MethodCall ||
++					kind == Shadow.ConstructorCall ||
++					kind == Shadow.FieldGet;
++				
++				if (kind == Shadow.FieldSet) {
++					if (!shadow.getSignature().getReturnType().isArray())
++						needwrapper = true;
++				}
++			}
++			
++			if (needwrapper) {
++				LazyMethodGen wrapper = shadow.replaceShadowByMethod(shadow.getKind(), forwardpool);
++				if (wrapper != null)
++					wrappers.add(wrapper);
++			}
++			else
++				shadow.implement();
++			CompilationAndWeavingContext.leavingPhase(tok);
++		}
++		mg.matchedShadows = null;
++	}
+ 
+ 	public LazyClassGen getLazyClassGen() {
+ 		return clazz;
+@@ -3227,3 +3286,99 @@ class BcelClassWeaver implements IClassWeaver {
+ 	}
+ 
+ }
++
++class ForwardMethodGenerator {
++	private boolean merge;
++	private final Map<Member, LazyMethodGen> methods;
++	private final Statistics stats;
++	private static final ForwardMethodGenerator singleton;
++	
++	static {
++		singleton = new ForwardMethodGenerator();
++	}
++	
++	public static ForwardMethodGenerator getSingleton() {
++		return singleton;
++	}
++	
++	ForwardMethodGenerator() {
++		this.methods = new HashMap<Member, LazyMethodGen>();
++		this.stats = new Statistics();
++	}
++	
++	static class Statistics {
++		private final Map<Member, Entry> globalcounts;
++		
++		public static class Entry {
++			public int count;
++			
++			public Entry() {
++				this.count = 1;
++			}
++		}
++		
++		public Statistics() {
++			this.globalcounts = new HashMap<Member, Entry>();
++		}
++		
++		public void hit(Member sig) {
++			Entry entry = this.globalcounts.get(sig);
++			if (entry == null)
++				throw new Error("assertion failure: " + sig);
++			
++			entry.count++;
++		}
++
++		public void create(Member sig) {
++			if (this.globalcounts.get(sig) != null)
++				throw new Error("assertion failure: " + sig);
++			
++			Entry entry = new Entry();
++			this.globalcounts.put(sig, entry);
++		}
++		
++		public void printStatistics(PrintStream str) {
++			str.println("=== Statistics on foward methods ===");
++			for (Map.Entry<Member, Entry> entry : this.globalcounts.entrySet()) {
++				str.print("\t");
++				str.print(entry.getKey());
++				str.print(" -> ");
++				str.print(entry.getValue().count);
++				str.println();
++			}
++		}	
++	}
++	
++	public void setMerge(boolean merge) {
++		this.merge = merge;
++	}
++	
++	public boolean isMerging() {
++		return this.merge;
++	}
++	
++	public LazyMethodGen findForwardMethod(Shadow shadow) {
++		Member sig = shadow.getSignature();
++		LazyMethodGen method = this.methods.get(sig);
++		if (method != null)
++			this.stats.hit(sig);
++		return method;
++	}
++	
++	public void registerForwardMethod(Shadow shadow, LazyMethodGen method) {
++		Member sig = shadow.getSignature();
++		LazyMethodGen already = this.methods.get(sig);
++		if (already != null)
++			throw new BCException("internal errors: " + shadow);
++		
++		this.methods.put(sig, method);
++		this.stats.create(sig);
++		
++//		System.err.println("One method was registered: " + sig + " -> " + method.getEnclosingClass().getName() + "." + method.getName());
++	}
++
++	public void printStatistics(PrintStream str) {
++		str.println("=== Statistics on foward methods ===");
++		this.stats.printStatistics(str);
++	}
++}
+diff --git a/weaver/src/org/aspectj/weaver/bcel/BcelShadow.java b/weaver/src/org/aspectj/weaver/bcel/BcelShadow.java
+index 8c51e0f..c24e32f 100644
+--- a/weaver/src/org/aspectj/weaver/bcel/BcelShadow.java
++++ b/weaver/src/org/aspectj/weaver/bcel/BcelShadow.java
+@@ -301,6 +301,76 @@ public class BcelShadow extends Shadow {
+ 		}
+ 		badAdvice.add(advice);
+ 	}
++	
++	public final LazyMethodGen replaceShadowByMethod(Shadow.Kind kind, ForwardMethodGenerator forwardpool) {
++		LazyClassGen shadowClass = getEnclosingClass();
++	
++		// For a constructor-call, creating an object (the 'new' instruction) and calling the
++		// constructor (the 'invokespecial' instruction) should be performed in the same method.
++		// Thus, I move the 'new' operation to the wrapper as well.
++		if (kind == Shadow.ConstructorCall) {
++			if (!this.deleteNewAndDup())
++				throw new BCException("could not delete 'new', which seems impossible");
++		}
++		
++		boolean merging = forwardpool.isMerging() && (kind == Shadow.MethodCall || kind == Shadow.ConstructorCall);
++	
++		boolean forwardMethodCreated = false;
++		LazyMethodGen forwardMethod = merging ? forwardpool.findForwardMethod(this) : null;
++		if (forwardMethod == null) {
++			LazyClassGen enclosing = shadowClass;
++			if (merging) {
++				if ((enclosing.getBcelObjectType().getModifiers() & Modifier.PUBLIC) == 0)
++					enclosing.forcePublic();
++			}
++			String methodName = NameMangler.aroundForwardMethodName(getSignature(), shadowClass.getNewGeneratedNameTag());
++			List<String> parameterNames = new ArrayList<String>();
++			forwardMethod = createWrapperMethodGen(enclosing, methodName, parameterNames, forwardpool.isMerging());
++			forwardMethodCreated = true;
++		}
++		
++		InstructionHandle replaced = null;
++		{
++			Instruction invoke = Utility.createInvoke(getFactory(), forwardMethod);
++			InstructionHandle replacing = range.insert(invoke, Range.InsideBefore);
++			replaced = replacing.getNext();
++			try {
++				range.body.delete(replaced);
++			} catch (TargetLostException e) {
++				throw new BCException("shouldn't have gotten a target lost");
++			}
++		}
++		
++		if (forwardMethodCreated) {
++			{
++				InstructionList freshBody = forwardMethod.getBody();
++				if (kind == Shadow.ConstructorCall) {
++					// Add 'new' to compensate what I deleted above.
++					freshBody.append(getFactory().createNew(new ObjectType(getSignature().getDeclaringType().getName())));
++					freshBody.append(InstructionConstants.DUP);
++				}
++				
++				Type[] stateTypes = forwardMethod.getArgumentTypes();
++				for (int i = 0; i < stateTypes.length; ++i) {
++					Type stateType = stateTypes[i];
++					InstructionLV loadi = InstructionFactory.createLoad(stateType, i);
++					freshBody.append(loadi);
++				}
++				freshBody.append(replaced.getInstruction());
++				freshBody.append(InstructionFactory.createReturn(forwardMethod.getReturnType()));
++			}
++			
++			if (merging)
++				forwardpool.registerForwardMethod(this, forwardMethod);
++			
++			BcelMethod method = new BcelMethod(shadowClass.getBcelObjectType(), forwardMethod.getMethod());
++			LazyMethodGen wrapped = new LazyMethodGen(method, shadowClass);
++			shadowClass.addMethodGen(wrapped);
++				
++			return wrapped;
++		}
++		return null;
++	}
+ 
+ 	@Override
+ 	protected void prepareForMungers() {
+@@ -3305,6 +3375,49 @@ public class BcelShadow extends Shadow {
+ 		return new LazyMethodGen(modifiers, BcelWorld.makeBcelType(returnType), newMethodName, shadowParameterTypes,
+ 				NoDeclaredExceptions, getEnclosingClass());
+ 	}
++	
++	private LazyMethodGen createWrapperMethodGen(LazyClassGen klass, String newMethodName, List<String> parameterNames, boolean merging) {
++		Type[] wrapperParameterTypes = BcelWorld.makeBcelTypes(getArgTypes());
++		if (hasTarget()) {
++			UnresolvedType targetType = getTargetType();
++			parameterNames.add("target");
++			wrapperParameterTypes = addTypeToFront(BcelWorld.makeBcelType(targetType), wrapperParameterTypes);
++		}
++		
++		int accessmodifier = merging ? Modifier.PUBLIC : Modifier.PRIVATE;
++		int modifiers = (world.useFinal() ? Modifier.FINAL : 0) | Modifier.STATIC | accessmodifier;
++
++		if (this.getKind() == Shadow.FieldSet || this.getKind() == Shadow.FieldGet) {
++			parameterNames.add(getSignature().getName());
++		} else {
++			String[] pnames = getSignature().getParameterNames(world);
++			if (pnames != null) {
++				for (int i = 0; i < pnames.length; i++) {
++					if (i == 0 && pnames[i].equals("this")) {
++						parameterNames.add("ajc$this");
++					} else {
++						parameterNames.add(pnames[i]);
++					}
++				}
++			}
++		}
++
++		UnresolvedType returnType;
++		if (getKind() == PreInitialization) {
++			returnType = UnresolvedType.OBJECTARRAY;
++		} else {
++			if (getKind() == ConstructorCall) {
++				returnType = getSignature().getDeclaringType();
++			} else if (getKind() == FieldSet) {
++				returnType = UnresolvedType.VOID;
++			} else {
++				returnType = getSignature().getReturnType().resolve(world);
++				// returnType = getReturnType(); // for this and above lines, see pr137496
++			}
++		}
++		return new LazyMethodGen(modifiers, BcelWorld.makeBcelType(returnType), newMethodName, wrapperParameterTypes,
++				NoDeclaredExceptions, klass);
++	}
+ 
+ 	private boolean samePackage(String p1, String p2) {
+ 		if (p1 == null) {
+diff --git a/weaver/src/org/aspectj/weaver/bcel/BcelTypeMunger.java b/weaver/src/org/aspectj/weaver/bcel/BcelTypeMunger.java
+index 8d528e5..adc1e8a 100644
+--- a/weaver/src/org/aspectj/weaver/bcel/BcelTypeMunger.java
++++ b/weaver/src/org/aspectj/weaver/bcel/BcelTypeMunger.java
+@@ -717,7 +717,6 @@ public class BcelTypeMunger extends ConcreteTypeMunger {
+ 		LazyMethodGen mg = makeMethodGen(gen, accessMethod);
+ 		InstructionList il = new InstructionList();
+ 		InstructionFactory fact = gen.getFactory();
+-		// Type fieldType = BcelWorld.makeBcelType(field.getType());
+ 		Type[] paramTypes = BcelWorld.makeBcelTypes(method.getParameterTypes());
+ 
+ 		int pos = 0;
+@@ -1932,6 +1931,17 @@ public class BcelTypeMunger extends ConcreteTypeMunger {
+ 						fg.addAnnotation(ag);
+ 					}
+ 				}
++
++				if (weaver.getWorld().isInJava5Mode()) {
++					String basicSignature = field.getSignature();
++					String genericSignature = field.getReturnType().resolve(weaver.getWorld()).getSignatureForAttribute();
++					// String genericSignature =
++					// ((ResolvedMemberImpl)field).getSignatureForAttribute();
++					if (!basicSignature.equals(genericSignature)) {
++						// Add a signature attribute to it
++						fg.addAttribute(createSignatureAttribute(gen.getConstantPool(), genericSignature));
++					}
++				}
+ 				gen.addField(fg, getSourceLocation());
+ 			}
+ 			// this uses a shadow munger to add init method to constructors
+diff --git a/weaver/src/org/aspectj/weaver/bcel/BcelWeaver.java b/weaver/src/org/aspectj/weaver/bcel/BcelWeaver.java
+index 0b62084..d271822 100644
+--- a/weaver/src/org/aspectj/weaver/bcel/BcelWeaver.java
++++ b/weaver/src/org/aspectj/weaver/bcel/BcelWeaver.java
+@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.io.OutputStream;
++import java.io.PrintStream;
+ import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.Collections;
+@@ -2018,4 +2019,8 @@ public class BcelWeaver {
+ 	public void setShadowMungers(List<ShadowMunger> shadowMungers) {
+ 		shadowMungerList = shadowMungers;
+ 	}
++	
++	public static void printStatistics(PrintStream str) {
++		ForwardMethodGenerator.getSingleton().printStatistics(str);
++	}
+ }
+diff --git a/weaver/src/org/aspectj/weaver/bcel/BcelWorld.java b/weaver/src/org/aspectj/weaver/bcel/BcelWorld.java
+index c46c689..36c97ca 100644
+--- a/weaver/src/org/aspectj/weaver/bcel/BcelWorld.java
++++ b/weaver/src/org/aspectj/weaver/bcel/BcelWorld.java
+@@ -1236,4 +1236,8 @@ public class BcelWorld extends World implements Repository {
+ 	public void demote(ResolvedType type) {
+ 		typeMap.demote(type);
+ 	}
++	
++	public ClassLoader getClassLoader() {
++		return this.loaderRef.getClassLoader();
++	}
+ }
+diff --git a/weaver/src/org/aspectj/weaver/bcel/LazyMethodGen.java b/weaver/src/org/aspectj/weaver/bcel/LazyMethodGen.java
+index 84ba6c0..b66c610 100644
+--- a/weaver/src/org/aspectj/weaver/bcel/LazyMethodGen.java
++++ b/weaver/src/org/aspectj/weaver/bcel/LazyMethodGen.java
+@@ -967,11 +967,12 @@ public final class LazyMethodGen implements Traceable {
+ 			if (enclosingClass.getWorld().isInJava5Mode()) {
+ 				gen.setModifiers(gen.getModifiers() | ACC_SYNTHETIC);
+ 			}
+-			// belt and braces, do the attribute even on Java 5 in addition to
+-			// the modifier flag
+-			ConstantPool cpg = gen.getConstantPool();
+-			int index = cpg.addUtf8("Synthetic");
+-			gen.addAttribute(new Synthetic(index, 0, new byte[0], cpg));
++			if (!hasAttribute("Synthetic")) {
++				// belt and braces, do the attribute even on Java 5 in addition to the modifier flag
++				ConstantPool cpg = gen.getConstantPool();
++				int index = cpg.addUtf8("Synthetic");
++				gen.addAttribute(new Synthetic(index, 0, new byte[0], cpg));
++			}
+ 		}
+ 
+ 		if (hasBody()) {
+@@ -991,6 +992,15 @@ public final class LazyMethodGen implements Traceable {
+ 		}
+ 		return gen;
+ 	}
++	
++	private boolean hasAttribute(String attributeName) {
++		for (Attribute attr: attributes) {
++			if (attr.getName().equals(attributeName)) {
++				return true;
++			}
++		}
++		return false;
++	}
+ 
+ 	private void forceSyntheticForAjcMagicMembers() {
+ 		if (NameMangler.isSyntheticMethod(getName(), inAspect())) {
+diff --git a/weaver/src/org/aspectj/weaver/tools/WeavingAdaptor.java b/weaver/src/org/aspectj/weaver/tools/WeavingAdaptor.java
+index f237946..fff57d7 100644
+--- a/weaver/src/org/aspectj/weaver/tools/WeavingAdaptor.java
++++ b/weaver/src/org/aspectj/weaver/tools/WeavingAdaptor.java
+@@ -470,6 +470,50 @@ public class WeavingAdaptor implements IMessageContext {
+ 		// || (name.startsWith("javax.") && (weavingSpecialTypes & WEAVE_JAVAX_PACKAGE) == 0)
+ 		// // || name.startsWith("$Proxy")//JDK proxies//FIXME AV is that 1.3 proxy ? fe. ataspect.$Proxy0 is a java5 proxy...
+ 		// || name.startsWith("sun.reflect."));
++		
++		
++		{
++			ClassLoader loader = this.bcelWorld.getClassLoader();
++			String loadername = loader.getClass().getName();
++			
++			{
++				boolean suppress = false;
++				String[] prefix = {
++					"sun.", "java.", "javax.", "com.sun.", "org.dacapo.harness.",
++					"org.apache.commons.", "org.apache.geronimo.", "net.sf.cglib.",
++				};
++				for (String p : prefix) {
++					if (name.startsWith(p)) {
++						suppress = true;
++						break;
++					}
++				}
++				if (suppress) {
++//					System.err.println("--- suppressing " + name + " (" + loadername + ")");
++					return false;
++				}
++			}
++			
++			{
++				boolean suppress = false;
++				String[] prefix = {
++					"org.apache.geronimo.",
++				};
++				for (String p : prefix) {
++					if (loadername.startsWith(p)) {
++						suppress = true;
++						break;
++					}
++				}
++				if (suppress) {
++//					System.err.println("--- suppressing " + name + " (" + loadername + ")");
++					return false;
++				}
++			}
++			
++//			System.err.println("--- weaving " + name + " (" + loadername + ")");
++		}
++		
+ 		return true;
+ 	}
+ 
