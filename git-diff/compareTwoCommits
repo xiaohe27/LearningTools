@@ -1,0 +1,11 @@
+ git diff oldCommit_hash  newCommit_hash > my.patch
+ git apply my.patch
+
+
+//compare commits A and B by diff A and B (B is comparing to A instead of its immediate ancestor)
+//do not use it at the current stage.
+git checkout A
+git cherry-pick -n B
+git diff > A2B.patch
+
+
