@@ -1,0 +1,551 @@
+diff --git a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/AjPipeliningCompilerAdapter.java b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/AjPipeliningCompilerAdapter.java
+index 00f7f8d..6d334e7 100644
+--- a/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/AjPipeliningCompilerAdapter.java
++++ b/org.aspectj.ajdt.core/src/org/aspectj/ajdt/internal/compiler/AjPipeliningCompilerAdapter.java
+@@ -431,6 +431,8 @@ public class AjPipeliningCompilerAdapter extends AbstractCompilerAdapter {
+ 		} else {
+ 			queueForWeaving(intRes);
+ 		}
++		
++		BcelWeaver.printStatistics(System.out);
+ 	}
+ 
+ 	private void queueForWeaving(InterimCompilationResult intRes) {
+diff --git a/org.aspectj.matcher/src/org/aspectj/weaver/NameMangler.java b/org.aspectj.matcher/src/org/aspectj/weaver/NameMangler.java
+index f916268..9e0b458 100644
+--- a/org.aspectj.matcher/src/org/aspectj/weaver/NameMangler.java
++++ b/org.aspectj.matcher/src/org/aspectj/weaver/NameMangler.java
+@@ -337,7 +337,13 @@ public class NameMangler {
+ 		ret.append(getExtractableName(shadowSig)).append("_aroundBody").append(suffixTag).append("$advice");
+ 		return ret.toString();
+ 	}
+-
++	
++	public static String aroundForwardMethodName(Member shadowSig, String suffixTag) {
++		StringBuffer ret = new StringBuffer();
++		ret.append(getExtractableName(shadowSig)).append("_aroundBody").append(suffixTag).append("$forward");
++		return ret.toString();
++	}
++	
+ 	public static String getExtractableName(Member shadowSignature) {
+ 		String name = shadowSignature.getName();
+ 		MemberKind kind = shadowSignature.getKind();
+diff --git a/org.aspectj.matcher/src/org/aspectj/weaver/Shadow.java b/org.aspectj.matcher/src/org/aspectj/weaver/Shadow.java
+index e0e85b6..19915b5 100644
+--- a/org.aspectj.matcher/src/org/aspectj/weaver/Shadow.java
++++ b/org.aspectj.matcher/src/org/aspectj/weaver/Shadow.java
+@@ -537,7 +537,7 @@ public abstract class Shadow {
+ 			this.mungers.add(munger);
+ 		}
+ 	}
+-
++	
+ 	public final void implement() {
+ 		sortMungers();
+ 		if (mungers == null) {
+@@ -628,11 +628,22 @@ public abstract class Shadow {
+ 	/** Actually implement the (non-empty) mungers associated with this shadow */
+ 	private void implementMungers() {
+ 		World world = getIWorld();
++		boolean woven = false;
+ 		for (ShadowMunger munger : mungers) {
+ 			if (munger.implementOn(this)) {
+ 				world.reportMatch(munger, this);
++				
++				if (world.isXmonitoringStatistics()) {
++					System.err.println("MOPSTAT: event-firing-sites\t" + munger.toString());
++					woven = true;
++				}
+ 			}
+ 		}
++		
++		if (world.isXmonitoringStatistics()) {
++			if (woven)
++				System.err.println("MOPSTAT: woven-shadows\t" + this.toString());
++		}
+ 	}
+ 
+ 	public abstract ISourceLocation getSourceLocation();
+diff --git a/org.aspectj.matcher/src/org/aspectj/weaver/World.java b/org.aspectj.matcher/src/org/aspectj/weaver/World.java
+index 960b059..7f9062b 100644
+--- a/org.aspectj.matcher/src/org/aspectj/weaver/World.java
++++ b/org.aspectj.matcher/src/org/aspectj/weaver/World.java
+@@ -89,6 +89,15 @@ public abstract class World implements Dump.INode {
+ 
+ 	/** XnoInline option setting passed down to weaver */
+ 	private boolean XnoInline;
++	
++	/** XalwaysWeaveAround option setting passed down to weaver */
++	private boolean XalwaysWeaveAround = true;
++	
++	/** XmergeForwardFunctions option setting passed down to weaver */
++	private boolean XmergeForwardFunctions = false;
++	
++	/** XmonitoringStatistics option setting passed down to weaver */
++	private boolean XmonitoringStatistics = false;
+ 
+ 	/** XlazyTjp option setting passed down to weaver */
+ 	private boolean XlazyTjp;
+@@ -807,6 +816,26 @@ public abstract class World implements Dump.INode {
+ 	public void setXnoInline(boolean xnoInline) {
+ 		XnoInline = xnoInline;
+ 	}
++	
++	public boolean isXalwaysWeaveAround() {
++		return XalwaysWeaveAround;
++	}
++	
++	public boolean isXmergeForwardFunctions() {
++		return XmergeForwardFunctions;
++	}
++	
++	public boolean isXmonitoringStatistics() {
++		return XmonitoringStatistics;
++	}
++	
++	public void setXalwaysWeaveAround(boolean xalwaysWeaveAround) {
++		XalwaysWeaveAround = xalwaysWeaveAround;
++	}
++	
++	public void setXmergeForwardFunctions(boolean xmergeforwardfunctions) {
++		XmergeForwardFunctions = xmergeforwardfunctions;
++	}
+ 
+ 	public boolean isXlazyTjp() {
+ 		return XlazyTjp;
+diff --git a/weaver/src/org/aspectj/weaver/bcel/BcelClassWeaver.java b/weaver/src/org/aspectj/weaver/bcel/BcelClassWeaver.java
+index fbeb09e..b3254cb 100644
+--- a/weaver/src/org/aspectj/weaver/bcel/BcelClassWeaver.java
++++ b/weaver/src/org/aspectj/weaver/bcel/BcelClassWeaver.java
+@@ -12,6 +12,7 @@
+ 
+ package org.aspectj.weaver.bcel;
+ 
++import java.io.PrintStream;
+ import java.lang.reflect.Modifier;
+ import java.util.ArrayList;
+ import java.util.Collections;
+@@ -487,13 +488,28 @@ class BcelClassWeaver implements IClassWeaver {
+ 				isChanged = true;
+ 			}
+ 		}
+-
+-		// now we weave all but the initialization shadows
+-		for (LazyMethodGen methodGen : methodGens) {
+-			if (!methodGen.hasBody()) {
+-				continue;
++		
++		if (world.isXalwaysWeaveAround()) {
++			ForwardMethodGenerator forwardpool = ForwardMethodGenerator.getSingleton();
++			forwardpool.setMerge(world.isXmergeForwardFunctions());
++			List<LazyMethodGen> wrappers = new ArrayList<LazyMethodGen>();
++			for (LazyMethodGen methodGen : methodGens) {
++				if (methodGen.hasBody())
++					implementOrReplaceShadowByWrapper(methodGen, wrappers, forwardpool);
++			}
++			
++			for (LazyMethodGen wrapper : wrappers) {
++				match(wrapper, true);
++				implement(wrapper);
++			}
++		} else {
++			// now we weave all but the initialization shadows
++			for (LazyMethodGen methodGen : methodGens) {
++				if (!methodGen.hasBody()) {
++					continue;
++				}
++				implement(methodGen);
+ 			}
+-			implement(methodGen);
+ 		}
+ 
+ 		// if we matched any initialization shadows, we inline and weave
+@@ -2504,8 +2520,12 @@ class BcelClassWeaver implements IClassWeaver {
+ 	}
+ 
+ 	// ----
+-
++	
+ 	private boolean match(LazyMethodGen mg) {
++		return match(mg, false);
++	}
++
++	private boolean match(LazyMethodGen mg, boolean forceweave) {
+ 		BcelShadow enclosingShadow;
+ 		List<BcelShadow> shadowAccumulator = new ArrayList<BcelShadow>();
+ 		boolean isOverweaving = world.isOverWeaving();
+@@ -2513,7 +2533,7 @@ class BcelClassWeaver implements IClassWeaver {
+ 		// we want to match ajsynthetic constructors...
+ 		if (startsAngly && mg.getName().equals("<init>")) {
+ 			return matchInit(mg, shadowAccumulator);
+-		} else if (!shouldWeaveBody(mg)) {
++		} else if (!forceweave && !shouldWeaveBody(mg)) {
+ 			return false;
+ 		} else {
+ 			if (startsAngly && mg.getName().equals("<clinit>")) {
+@@ -3204,6 +3224,45 @@ class BcelClassWeaver implements IClassWeaver {
+ 	}
+ 
+ 	// ----
++	
++	private void implementOrReplaceShadowByWrapper(LazyMethodGen mg, List<LazyMethodGen> wrappers, ForwardMethodGenerator forwardpool) {
++		List<BcelShadow> shadows = mg.matchedShadows;
++		if (shadows == null) {
++			return;
++		}
++		
++		// An interface cannot have a method.
++		boolean suppress = mg.getEnclosingClass().isInterface();
++		
++		for (BcelShadow shadow : shadows) {
++			ContextToken tok = CompilationAndWeavingContext.enteringPhase(CompilationAndWeavingContext.IMPLEMENTING_ON_SHADOW,
++					shadow);
++			
++			boolean needwrapper = false;
++			if (!suppress) {
++				Shadow.Kind kind = shadow.getKind();
++				needwrapper =
++					kind == Shadow.MethodCall ||
++					kind == Shadow.ConstructorCall ||
++					kind == Shadow.FieldGet;
++				
++				if (kind == Shadow.FieldSet) {
++					if (!shadow.getSignature().getReturnType().isArray())
++						needwrapper = true;
++				}
++			}
++			
++			if (needwrapper) {
++				LazyMethodGen wrapper = shadow.replaceShadowByMethod(shadow.getKind(), forwardpool);
++				if (wrapper != null)
++					wrappers.add(wrapper);
++			}
++			else
++				shadow.implement();
++			CompilationAndWeavingContext.leavingPhase(tok);
++		}
++		mg.matchedShadows = null;
++	}
+ 
+ 	public LazyClassGen getLazyClassGen() {
+ 		return clazz;
+@@ -3227,3 +3286,99 @@ class BcelClassWeaver implements IClassWeaver {
+ 	}
+ 
+ }
++
++class ForwardMethodGenerator {
++	private boolean merge;
++	private final Map<Member, LazyMethodGen> methods;
++	private final Statistics stats;
++	private static final ForwardMethodGenerator singleton;
++	
++	static {
++		singleton = new ForwardMethodGenerator();
++	}
++	
++	public static ForwardMethodGenerator getSingleton() {
++		return singleton;
++	}
++	
++	ForwardMethodGenerator() {
++		this.methods = new HashMap<Member, LazyMethodGen>();
++		this.stats = new Statistics();
++	}
++	
++	static class Statistics {
++		private final Map<Member, Entry> globalcounts;
++		
++		public static class Entry {
++			public int count;
++			
++			public Entry() {
++				this.count = 1;
++			}
++		}
++		
++		public Statistics() {
++			this.globalcounts = new HashMap<Member, Entry>();
++		}
++		
++		public void hit(Member sig) {
++			Entry entry = this.globalcounts.get(sig);
++			if (entry == null)
++				throw new Error("assertion failure: " + sig);
++			
++			entry.count++;
++		}
++
++		public void create(Member sig) {
++			if (this.globalcounts.get(sig) != null)
++				throw new Error("assertion failure: " + sig);
++			
++			Entry entry = new Entry();
++			this.globalcounts.put(sig, entry);
++		}
++		
++		public void printStatistics(PrintStream str) {
++			str.println("=== Statistics on foward methods ===");
++			for (Map.Entry<Member, Entry> entry : this.globalcounts.entrySet()) {
++				str.print("\t");
++				str.print(entry.getKey());
++				str.print(" -> ");
++				str.print(entry.getValue().count);
++				str.println();
++			}
++		}	
++	}
++	
++	public void setMerge(boolean merge) {
++		this.merge = merge;
++	}
++	
++	public boolean isMerging() {
++		return this.merge;
++	}
++	
++	public LazyMethodGen findForwardMethod(Shadow shadow) {
++		Member sig = shadow.getSignature();
++		LazyMethodGen method = this.methods.get(sig);
++		if (method != null)
++			this.stats.hit(sig);
++		return method;
++	}
++	
++	public void registerForwardMethod(Shadow shadow, LazyMethodGen method) {
++		Member sig = shadow.getSignature();
++		LazyMethodGen already = this.methods.get(sig);
++		if (already != null)
++			throw new BCException("internal errors: " + shadow);
++		
++		this.methods.put(sig, method);
++		this.stats.create(sig);
++		
++//		System.err.println("One method was registered: " + sig + " -> " + method.getEnclosingClass().getName() + "." + method.getName());
++	}
++
++	public void printStatistics(PrintStream str) {
++		str.println("=== Statistics on foward methods ===");
++		this.stats.printStatistics(str);
++	}
++}
+diff --git a/weaver/src/org/aspectj/weaver/bcel/BcelShadow.java b/weaver/src/org/aspectj/weaver/bcel/BcelShadow.java
+index 8c51e0f..c24e32f 100644
+--- a/weaver/src/org/aspectj/weaver/bcel/BcelShadow.java
++++ b/weaver/src/org/aspectj/weaver/bcel/BcelShadow.java
+@@ -301,6 +301,76 @@ public class BcelShadow extends Shadow {
+ 		}
+ 		badAdvice.add(advice);
+ 	}
++	
++	public final LazyMethodGen replaceShadowByMethod(Shadow.Kind kind, ForwardMethodGenerator forwardpool) {
++		LazyClassGen shadowClass = getEnclosingClass();
++	
++		// For a constructor-call, creating an object (the 'new' instruction) and calling the
++		// constructor (the 'invokespecial' instruction) should be performed in the same method.
++		// Thus, I move the 'new' operation to the wrapper as well.
++		if (kind == Shadow.ConstructorCall) {
++			if (!this.deleteNewAndDup())
++				throw new BCException("could not delete 'new', which seems impossible");
++		}
++		
++		boolean merging = forwardpool.isMerging() && (kind == Shadow.MethodCall || kind == Shadow.ConstructorCall);
++	
++		boolean forwardMethodCreated = false;
++		LazyMethodGen forwardMethod = merging ? forwardpool.findForwardMethod(this) : null;
++		if (forwardMethod == null) {
++			LazyClassGen enclosing = shadowClass;
++			if (merging) {
++				if ((enclosing.getBcelObjectType().getModifiers() & Modifier.PUBLIC) == 0)
++					enclosing.forcePublic();
++			}
++			String methodName = NameMangler.aroundForwardMethodName(getSignature(), shadowClass.getNewGeneratedNameTag());
++			List<String> parameterNames = new ArrayList<String>();
++			forwardMethod = createWrapperMethodGen(enclosing, methodName, parameterNames, forwardpool.isMerging());
++			forwardMethodCreated = true;
++		}
++		
++		InstructionHandle replaced = null;
++		{
++			Instruction invoke = Utility.createInvoke(getFactory(), forwardMethod);
++			InstructionHandle replacing = range.insert(invoke, Range.InsideBefore);
++			replaced = replacing.getNext();
++			try {
++				range.body.delete(replaced);
++			} catch (TargetLostException e) {
++				throw new BCException("shouldn't have gotten a target lost");
++			}
++		}
++		
++		if (forwardMethodCreated) {
++			{
++				InstructionList freshBody = forwardMethod.getBody();
++				if (kind == Shadow.ConstructorCall) {
++					// Add 'new' to compensate what I deleted above.
++					freshBody.append(getFactory().createNew(new ObjectType(getSignature().getDeclaringType().getName())));
++					freshBody.append(InstructionConstants.DUP);
++				}
++				
++				Type[] stateTypes = forwardMethod.getArgumentTypes();
++				for (int i = 0; i < stateTypes.length; ++i) {
++					Type stateType = stateTypes[i];
++					InstructionLV loadi = InstructionFactory.createLoad(stateType, i);
++					freshBody.append(loadi);
++				}
++				freshBody.append(replaced.getInstruction());
++				freshBody.append(InstructionFactory.createReturn(forwardMethod.getReturnType()));
++			}
++			
++			if (merging)
++				forwardpool.registerForwardMethod(this, forwardMethod);
++			
++			BcelMethod method = new BcelMethod(shadowClass.getBcelObjectType(), forwardMethod.getMethod());
++			LazyMethodGen wrapped = new LazyMethodGen(method, shadowClass);
++			shadowClass.addMethodGen(wrapped);
++				
++			return wrapped;
++		}
++		return null;
++	}
+ 
+ 	@Override
+ 	protected void prepareForMungers() {
+@@ -3305,6 +3375,49 @@ public class BcelShadow extends Shadow {
+ 		return new LazyMethodGen(modifiers, BcelWorld.makeBcelType(returnType), newMethodName, shadowParameterTypes,
+ 				NoDeclaredExceptions, getEnclosingClass());
+ 	}
++	
++	private LazyMethodGen createWrapperMethodGen(LazyClassGen klass, String newMethodName, List<String> parameterNames, boolean merging) {
++		Type[] wrapperParameterTypes = BcelWorld.makeBcelTypes(getArgTypes());
++		if (hasTarget()) {
++			UnresolvedType targetType = getTargetType();
++			parameterNames.add("target");
++			wrapperParameterTypes = addTypeToFront(BcelWorld.makeBcelType(targetType), wrapperParameterTypes);
++		}
++		
++		int accessmodifier = merging ? Modifier.PUBLIC : Modifier.PRIVATE;
++		int modifiers = (world.useFinal() ? Modifier.FINAL : 0) | Modifier.STATIC | accessmodifier;
++
++		if (this.getKind() == Shadow.FieldSet || this.getKind() == Shadow.FieldGet) {
++			parameterNames.add(getSignature().getName());
++		} else {
++			String[] pnames = getSignature().getParameterNames(world);
++			if (pnames != null) {
++				for (int i = 0; i < pnames.length; i++) {
++					if (i == 0 && pnames[i].equals("this")) {
++						parameterNames.add("ajc$this");
++					} else {
++						parameterNames.add(pnames[i]);
++					}
++				}
++			}
++		}
++
++		UnresolvedType returnType;
++		if (getKind() == PreInitialization) {
++			returnType = UnresolvedType.OBJECTARRAY;
++		} else {
++			if (getKind() == ConstructorCall) {
++				returnType = getSignature().getDeclaringType();
++			} else if (getKind() == FieldSet) {
++				returnType = UnresolvedType.VOID;
++			} else {
++				returnType = getSignature().getReturnType().resolve(world);
++				// returnType = getReturnType(); // for this and above lines, see pr137496
++			}
++		}
++		return new LazyMethodGen(modifiers, BcelWorld.makeBcelType(returnType), newMethodName, wrapperParameterTypes,
++				NoDeclaredExceptions, klass);
++	}
+ 
+ 	private boolean samePackage(String p1, String p2) {
+ 		if (p1 == null) {
+diff --git a/weaver/src/org/aspectj/weaver/bcel/BcelWeaver.java b/weaver/src/org/aspectj/weaver/bcel/BcelWeaver.java
+index 0b62084..d271822 100644
+--- a/weaver/src/org/aspectj/weaver/bcel/BcelWeaver.java
++++ b/weaver/src/org/aspectj/weaver/bcel/BcelWeaver.java
+@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.io.OutputStream;
++import java.io.PrintStream;
+ import java.util.ArrayList;
+ import java.util.Collection;
+ import java.util.Collections;
+@@ -2018,4 +2019,8 @@ public class BcelWeaver {
+ 	public void setShadowMungers(List<ShadowMunger> shadowMungers) {
+ 		shadowMungerList = shadowMungers;
+ 	}
++	
++	public static void printStatistics(PrintStream str) {
++		ForwardMethodGenerator.getSingleton().printStatistics(str);
++	}
+ }
+diff --git a/weaver/src/org/aspectj/weaver/bcel/BcelWorld.java b/weaver/src/org/aspectj/weaver/bcel/BcelWorld.java
+index c46c689..36c97ca 100644
+--- a/weaver/src/org/aspectj/weaver/bcel/BcelWorld.java
++++ b/weaver/src/org/aspectj/weaver/bcel/BcelWorld.java
+@@ -1236,4 +1236,8 @@ public class BcelWorld extends World implements Repository {
+ 	public void demote(ResolvedType type) {
+ 		typeMap.demote(type);
+ 	}
++	
++	public ClassLoader getClassLoader() {
++		return this.loaderRef.getClassLoader();
++	}
+ }
+diff --git a/weaver/src/org/aspectj/weaver/tools/WeavingAdaptor.java b/weaver/src/org/aspectj/weaver/tools/WeavingAdaptor.java
+index f237946..fff57d7 100644
+--- a/weaver/src/org/aspectj/weaver/tools/WeavingAdaptor.java
++++ b/weaver/src/org/aspectj/weaver/tools/WeavingAdaptor.java
+@@ -470,6 +470,50 @@ public class WeavingAdaptor implements IMessageContext {
+ 		// || (name.startsWith("javax.") && (weavingSpecialTypes & WEAVE_JAVAX_PACKAGE) == 0)
+ 		// // || name.startsWith("$Proxy")//JDK proxies//FIXME AV is that 1.3 proxy ? fe. ataspect.$Proxy0 is a java5 proxy...
+ 		// || name.startsWith("sun.reflect."));
++		
++		
++		{
++			ClassLoader loader = this.bcelWorld.getClassLoader();
++			String loadername = loader.getClass().getName();
++			
++			{
++				boolean suppress = false;
++				String[] prefix = {
++					"sun.", "java.", "javax.", "com.sun.", "org.dacapo.harness.",
++					"org.apache.commons.", "org.apache.geronimo.", "net.sf.cglib.",
++				};
++				for (String p : prefix) {
++					if (name.startsWith(p)) {
++						suppress = true;
++						break;
++					}
++				}
++				if (suppress) {
++//					System.err.println("--- suppressing " + name + " (" + loadername + ")");
++					return false;
++				}
++			}
++			
++			{
++				boolean suppress = false;
++				String[] prefix = {
++					"org.apache.geronimo.",
++				};
++				for (String p : prefix) {
++					if (loadername.startsWith(p)) {
++						suppress = true;
++						break;
++					}
++				}
++				if (suppress) {
++//					System.err.println("--- suppressing " + name + " (" + loadername + ")");
++					return false;
++				}
++			}
++			
++//			System.err.println("--- weaving " + name + " (" + loadername + ")");
++		}
++		
+ 		return true;
+ 	}
+ 
