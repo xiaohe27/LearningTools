@@ -10,7 +10,7 @@ import java.io.ObjectInputStream;
  * Created by xiaohe on 11/11/14.
  */
 public class ReadAST {
-    public static void readAST(){
+    public static AST readAST(){
         AST root=null;
 
         try
@@ -23,18 +23,24 @@ public class ReadAST {
         }catch(IOException i)
         {
             i.printStackTrace();
-            return;
+            return null;
         }catch(ClassNotFoundException c)
         {
             System.out.println("AST class not found");
             c.printStackTrace();
-            return;
+            return null;
         }
+
+        return root;
+    }
+
+    public static void printASTFromFile(){
+        AST root=readAST();
 
         System.out.println(root.print());
     }
 
     public static void main(String[] args){
-        readAST();
+        printASTFromFile();
     }
 }

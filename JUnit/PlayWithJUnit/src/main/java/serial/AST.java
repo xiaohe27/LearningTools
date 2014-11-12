@@ -13,7 +13,7 @@ public class AST implements Serializable {
     private AST rightChild;
 
     public AST(){
-
+        this.setStrData("defaultSTR");
     }
 
     public AST(int intData, String strData) {
@@ -38,6 +38,40 @@ public class AST implements Serializable {
         output+="{//here comes the left child: \n"+lc+"\n}\n{//here comes the right child: \n"+rc+"\n}\n";
 
         return output;
+    }
+
+//    @Override
+    public boolean equals(AST other){
+        if (other==null)
+            return false;
+
+        if (!this.getStrData().equals(other.getStrData()))
+            return false;
+
+        if (this.getIntData() != other.getIntData())
+            return false;
+
+        if(this.leftChild!=null){
+            boolean leftOK=this.leftChild.equals(other.leftChild);
+
+            if(!leftOK)
+                return false;
+        } else{
+            if(other.leftChild !=null)
+                return false;
+        }
+
+        if(this.rightChild!=null){
+            boolean rightOK=this.rightChild.equals(other.rightChild);
+
+            if(!rightOK)
+                return false;
+        } else{
+            if(other.rightChild !=null)
+                return false;
+        }
+
+        return true;
     }
 
     public int getIntData() {
