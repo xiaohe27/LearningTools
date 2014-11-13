@@ -16,11 +16,9 @@ public class TestAST {
 
     AST newAST=GenAST.genAST2();
 
-//    System.out.println(stdAST.print());
+    Assert.assertEquals("curAST should equal to stdAST", stdAST, curAST);
 
-    Assert.assertEquals(stdAST.print(), curAST.print());
-
-    Assert.assertEquals(stdAST.print(), newAST.print());
+//    Assert.assertEquals("newAST should equal to stdAST", stdAST, newAST);
 }
 
 }

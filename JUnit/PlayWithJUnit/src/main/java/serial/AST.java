@@ -40,8 +40,14 @@ public class AST implements Serializable {
         return output;
     }
 
-//    @Override
-    public boolean equals(AST other){
+    @Override
+    public boolean equals(Object otherAST){
+        AST other=null;
+
+        try{other=(AST) otherAST; } catch (Exception ex){
+            return false;
+        }
+
         if (other==null)
             return false;
 
