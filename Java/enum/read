@@ -1,0 +1,10 @@
+public enum Primitive {
+        Boolean, Char, Byte, Short, Int, Long, Float, Double
+    }
+
+    private final Primitive type;
+
+    public PrimitiveType(int line, int column, Primitive type) {
+        super(line, column);
+        this.type = type;
+    }
