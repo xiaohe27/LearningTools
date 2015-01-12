@@ -1,0 +1,3 @@
+Matcher only try to find specified pattern in the fixed input. The starting pos is there and does not move automatically
+Use reset can change its input
+usePattern can change its pattern 
