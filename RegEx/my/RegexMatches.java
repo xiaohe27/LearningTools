@@ -6,8 +6,8 @@ public class RegexMatches
     public static void main( String args[] ){
 
       // String to be scanned to find the pattern.
-      String line = "@123 commit(good , bad) insert (me,db)";
-      String pattern = "(.*)(\\d+)(.*)";
+      String line = "@123 commit(good)";
+      String pattern = "(@\\d+)\\s+(\\w+)\\s*\\(\\s*(\\w+)\\s*\\)";
 
       // Create a Pattern object
       Pattern r = Pattern.compile(pattern);
@@ -18,6 +18,7 @@ public class RegexMatches
          System.out.println("Found value: " + m.group(0) );
          System.out.println("Found value: " + m.group(1) );
          System.out.println("Found value: " + m.group(2) );
+	 System.out.println("Found value: " + m.group(3) );
       } else {
          System.out.println("NO MATCH");
       }
