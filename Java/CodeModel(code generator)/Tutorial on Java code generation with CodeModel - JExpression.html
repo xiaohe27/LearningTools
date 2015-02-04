@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<!--[if IE 6]>
+<html id="ie6" lang="en-US">
+<![endif]-->
+<!--[if IE 7]>
+<html id="ie7" lang="en-US">
+<![endif]-->
+<!--[if IE 8]>
+<html id="ie8" lang="en-US">
+<![endif]-->
+<!--[if !(IE 6) | !(IE 7) | !(IE 8)  ]><!-->
+<html lang="en-US">
+<!--<![endif]-->
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width" />
+<meta name="google-site-verification" content="9wgSBGaywxLsPhtW3cGUTqtDAAge9zeZyQ0vd3A5qX0" />
+
+<link rel="profile" href="http://gmpg.org/xfn/11" />
+<link rel="stylesheet" type="text/css" media="all" href="http://blogtech.cardosi.net/wp-content/themes/mytwentyeleven/style.css" />
+<link rel="pingback" href="http://blogtech.cardosi.net/xmlrpc.php" />
+<!--[if lt IE 9]>
+<script src="http://blogtech.cardosi.net/wp-content/themes/twentyeleven/js/html5.js" type="text/javascript"></script>
+<![endif]-->
+
+<!-- This site is optimized with the Yoast WordPress SEO plugin v1.7.1 - https://yoast.com/wordpress/plugins/seo/ -->
+<title>Tutorial on Java code generation with CodeModel - JExpression</title>
+<meta name="description" content="tutorial Java CodeModel JExp JExpression"/>
+<link rel="canonical" href="http://blogtech.cardosi.net/2013/10/14/tutorial-java-codemodel-jexpression/" />
+<!-- / Yoast WordPress SEO plugin. -->
+
+<link rel="alternate" type="application/rss+xml" title="TechBlog &raquo; Feed" href="http://blogtech.cardosi.net/feed/" />
+<link rel="alternate" type="application/rss+xml" title="TechBlog &raquo; Comments Feed" href="http://blogtech.cardosi.net/comments/feed/" />
+<link rel="alternate" type="application/rss+xml" title="TechBlog &raquo; Tutorial on Java code generation with CodeModel &#8211; JExpression Comments Feed" href="http://blogtech.cardosi.net/2013/10/14/tutorial-java-codemodel-jexpression/feed/" />
+<link rel='stylesheet' id='wpsc-theme-css-css'  href='http://blogtech.cardosi.net/wp-content/plugins/wp-e-commerce/wpsc-components/theme-engine-v1/templates/wpsc-.css?ver=3.9.1.66518b9' type='text/css' media='all' />
+<style id='wpsc-theme-css-inline-css' type='text/css'>
+
+		/*
+		* Default View Styling
+		*/
+		div.default_product_display div.textcol{
+			margin-left: 106px !important;
+			min-height: 96px;
+			_height: 96px;
+		}
+
+		div.default_product_display  div.textcol div.imagecol{
+			position:absolute;
+			top:0px;
+			left: 0px;
+			margin-left: -106px !important;
+		}
+
+		div.default_product_display  div.textcol div.imagecol a img {
+			width: 96px;
+			height: 96px;
+		}
+
+		.wpsc_category_grid_item  {
+			display:block;
+			float:left;
+			width: px;
+			height: px;
+		}
+		.wpsc_category_grid_item  span{
+			position:relative;
+			top:10.444444444444px;
+		}
+		div.default_product_display div.item_no_image a  {
+			width: 94px;
+		}
+
+		div.default_product_display .imagecol img.no-image, #content div.default_product_display .imagecol img.no-image {
+			width: 96px;
+			height: 96px;
+        }
+
+		
+		/*
+		* Single View Styling
+		*/
+
+		div.single_product_display div.item_no_image  {
+			width: 126px;
+			height: -2px;
+		}
+		div.single_product_display div.item_no_image a  {
+			width: 126px;
+		}
+
+		div.single_product_display div.textcol{
+			margin-left: 138px !important;
+			min-height: px;
+			_height: px;
+		}
+
+
+		div.single_product_display  div.textcol div.imagecol{
+			position:absolute;
+
+			margin-left: -138px !important;
+		}
+
+		div.single_product_display  div.textcol div.imagecol a img {
+			width: 128px;
+			height: px;
+		}
+
+	div#categorydisplay{
+		display: block;
+	}
+
+	div#branddisplay{
+		display: none;
+	}
+
+</style>
+<link rel='stylesheet' id='wpsc-theme-css-compatibility-css'  href='http://blogtech.cardosi.net/wp-content/plugins/wp-e-commerce/wpsc-components/theme-engine-v1/templates/compatibility.css?ver=3.9.1.66518b9' type='text/css' media='all' />
+<script type='text/javascript' src='http://blogtech.cardosi.net/wp-includes/js/jquery/jquery.js?ver=1.11.1'></script>
+<script type='text/javascript' src='http://blogtech.cardosi.net/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.2.1'></script>
+<script type='text/javascript'>
+/* <![CDATA[ */
+var wpsc_vars = {"wpsc_ajax":{"ajaxurl":"\/wp-admin\/admin-ajax.php","spinner":"http:\/\/blogtech.cardosi.net\/wp-admin\/images\/spinner.gif","no_quotes":"It appears that there are no shipping quotes for the shipping information provided.  Please check the information and try again.","ajax_get_cart_error":"There was a problem getting the current contents of the shopping cart.","slide_to_shipping_error":true},"base_url":"http:\/\/blogtech.cardosi.net","WPSC_URL":"http:\/\/blogtech.cardosi.net\/wp-content\/plugins\/wp-e-commerce","WPSC_IMAGE_URL":"http:\/\/blogtech.cardosi.net\/files\/wpsc\/product_images\/","WPSC_CORE_IMAGES_URL":"http:\/\/blogtech.cardosi.net\/wp-content\/plugins\/wp-e-commerce\/wpsc-core\/images","fileThickboxLoadingImage":"http:\/\/blogtech.cardosi.net\/wp-content\/plugins\/wp-e-commerce\/wpsc-core\/images\/loadingAnimation.gif","msg_shipping_need_recalc":"Please click the <em>Calculate<\/em> button to refresh your shipping quotes, as your shipping information has been modified.","no_country_selected":"Please select a country","no_region_selected_format":"Please select a %s","no_region_label":"State\/Province","base_country":"","wpsc_checkout_unique_name_to_form_id_map":[],"wpsc_checkout_item_active":[],"wpsc_checkout_item_required":[],"store_uses_shipping":"1"};
+/* ]]> */
+</script>
+<script type='text/javascript' src='http://blogtech.cardosi.net/wp-content/plugins/wp-e-commerce/wpsc-core/js/wp-e-commerce.js?ver=3.9.1.66518b9'></script>
+<script type='text/javascript' src='http://blogtech.cardosi.net/wp-content/plugins/wp-e-commerce/wpsc-admin/js/jquery.livequery.js?ver=1.0.3'></script>
+<script type='text/javascript' src='http://blogtech.cardosi.net/wp-content/plugins/wp-e-commerce/wpsc-core/js/user.js?ver=3.9.166518b9'></script>
+<link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://blogtech.cardosi.net/xmlrpc.php?rsd" />
+<link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://blogtech.cardosi.net/wp-includes/wlwmanifest.xml" /> 
+<meta name="generator" content="WordPress 4.1" />
+<link rel='shortlink' href='http://blogtech.cardosi.net/?p=208' />
+	<link href="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Styles/SyntaxHighlighter.css" type="text/css" rel="stylesheet" />
+	<link rel='alternate' type='application/rss+xml' title='TechBlog Product List RSS' href='http://blogtech.cardosi.net?wpsc_action=rss'/>	<style type="text/css">.recentcomments a{display:inline !important;padding:0 !important;margin:0 !important;}</style>
+</head>
+
+<body class="single single-post postid-208 single-format-standard custom-background single-author two-column right-sidebar">
+<div id="page" class="hfeed">
+	<header id="branding" role="banner">
+			<hgroup>
+				<h1 id="site-title"><span><a href="http://blogtech.cardosi.net/" title="TechBlog" rel="home">TechBlog</a></span></h1>
+				<h2 id="site-description">Technical blog about programming in Java</h2>
+			</hgroup>
+
+						<a href="http://blogtech.cardosi.net/">
+									<img src="http://blogtech.cardosi.net/wp-content/themes/twentyeleven/images/headers/shore.jpg" width="1000" height="288" alt="" />
+							</a>
+			
+								<form method="get" id="searchform" action="http://blogtech.cardosi.net/">
+		<label for="s" class="assistive-text">Search</label>
+		<input type="text" class="field" name="s" id="s" placeholder="Search" />
+		<input type="submit" class="submit" name="submit" id="searchsubmit" value="Search" />
+	</form>
+			
+			<nav id="access" role="navigation">
+				<h3 class="assistive-text">Main menu</h3>
+								<div class="skip-link"><a class="assistive-text" href="#content" title="Skip to primary content">Skip to primary content</a></div>
+				<div class="skip-link"><a class="assistive-text" href="#secondary" title="Skip to secondary content">Skip to secondary content</a></div>
+								<div class="menu"><ul><li ><a href="http://blogtech.cardosi.net/">Home</a></li></ul></div>
+			</nav><!-- #access -->
+	</header><!-- #branding -->
+
+
+	<div id="main">
+
+		<div id="primary">
+			<div id="content" role="main">
+
+				
+					<nav id="nav-single">
+						<h3 class="assistive-text">Post navigation</h3>
+						<span class="nav-previous"><a href="http://blogtech.cardosi.net/2013/09/07/tutorial-on-lamj-part-1/" rel="prev"><span class="meta-nav">&larr;</span> Previous</a></span>
+						<span class="nav-next"><a href="http://blogtech.cardosi.net/2013/12/13/git-svn-eclipse/" rel="next">Next <span class="meta-nav">&rarr;</span></a></span>
+					</nav><!-- #nav-single -->
+
+					
+<article id="post-208" class="post-208 post type-post status-publish format-standard hentry category-developing category-java">
+	<header class="entry-header">
+		<h1 class="entry-title">Tutorial on Java code generation with CodeModel &#8211; JExpression</h1>
+
+				<div class="entry-meta">
+			<span class="sep">Posted on </span><a href="http://blogtech.cardosi.net/2013/10/14/tutorial-java-codemodel-jexpression/" title="6:06 pm" rel="bookmark"><time class="entry-date" datetime="2013-10-14T18:06:11+00:00">October 14, 2013</time></a><span class="by-author"> <span class="sep"> by </span> <span class="author vcard"><a class="url fn n" href="http://blogtech.cardosi.net/author/" title="View all posts by " rel="author"></a></span></span>		</div><!-- .entry-meta -->
+			</header><!-- .entry-header -->
+
+	<div class="entry-content">
+		<h2>This part of the tutorial is about JExpr and JExpression in CodeModel.</h2>
+<p>In the previous post I have used the <code>JExpr</code> class to write assignment code inside the body of some methods. Well, I must confess that I found <code>JExpr</code> and <code>JExpression</code> really hard to understand (let&#8217;s say this plainly: documentation did not help a bit, in this case).<br />
+From official documentation we could see that</p>
+<p>&#8220;JExpression defines a series of composer methods, which returns a complicated expression (by often taking other JExpressions as parameters. For example, you can build &#8220;5+2&#8243; by JExpr.lit(5).add(JExpr.lit(2))&#8221;<br />
+and, about JExpr:<br />
+&#8220;Factory methods that generate various JExpressions.&#8221;</p>
+<p>Some example of JExpr (static) methods are:</p>
+<ul>
+<li>_null();</li>
+<li>_super(): Returns a reference to &#8220;super&#8221;, an implicit reference to the super class.</li>
+<li>_this(): Returns a reference to &#8220;this&#8221;, an implicit reference to the current object.</li>
+</ul>
+<p>So, easy enough, when you need a reference to one of this, you have to use the <code>JExpr</code> method that, in turn, return a <code>JExpression</code> that represent it.</p>
+<p>The following snippet creates a <code>constructor</code> method that accept an <code>int</code> as parameter, and we assign this parameter to a private field:</p>
+<pre class="java">        
+        String className = "net.cardosi.MyNewClassD";
+	JDefinedClass definedClass = codeModel._class(className);
+	String fieldName = "intVar";
+	JFieldVar field = definedClass.field(JMod.PRIVATE, int.class, fieldName);
+	JMethod constructorMethod = definedClass.constructor(JMod.PUBLIC);
+	String intVarParameter = "intVarParam";
+	constructorMethod.param(int.class, intVarParameter);
+	JBlock block = constructorMethod.body();
+	block.assign(JExpr._this().ref(fieldName), JExpr.ref(intVarParameter));</pre>
+<p>Here&#8217;s the resultant code:</p>
+<pre class="java">package net.cardosi;
+
+public class MyNewClassD {
+
+    private int intVar;
+
+    public MyNewClassD(int intVarParam) {
+        this.intVar = intVarParam;
+    }
+}</pre>
+<p>I know I could have avoided the <code>this</code> reference, in this case, but anyway&#8230;<br />
+Another interesting detail is the use of <code>JExpr.ref()</code>, that&#8217;s needed to retrieve a reference to a given field (more exactly, it returns a <code>JFieldRef</code> reference for a field with a given name). So, the line:<br />
+<code>block.assign(JExpr._this().ref(fieldName), JExpr.ref(intVarParameter));</code><br />
+assign the value of the field referenced by <i>intVarParameter</i> (in this case, a method&#8217; parameter) to the field referenced by <i>fieldName</i> of the <code>this</code> object.</p>
+<p>Another use of <code>JExpr</code> could be the creation of a <code>JExpression</code> representing a <i>literal</i> (boolean, double, float, char, int, long, and String):</p>
+<pre class="java">        
+        String className = "net.cardosi.MyNewClassD";
+	JDefinedClass definedClass = codeModel._class(className);
+	String stringName = "stringVar";
+	JFieldVar stringField = definedClass.field(JMod.PRIVATE, String.class, stringName);
+	JMethod constructorMethod = definedClass.constructor(JMod.PUBLIC);
+	JBlock block = constructorMethod.body();
+	block.assign(JExpr._this().ref(stringName), JExpr.lit("DEFAULT VALUE"));</pre>
+<p>Here&#8217;s the newly generated class, where the &#8220;stringVar&#8221; is initialized with &#8220;DEFAULT VALUE&#8221; inside the constructor:</p>
+<pre class="java">package net.cardosi;
+
+public class MyNewClassD {
+
+    private String stringVar;
+
+    public MyNewClassD() {
+        this.stringVar = "DEFAULT VALUE";
+    }
+}</pre>
+<p>Now, it&#8217;s time to look at <code>JExpression</code> a little bit closer. Like <code>JExpr</code> has static methods to retrieve some specific <code>JExpression</code>s, <code>JExpression</code> has instance methods to retrieve specific <code>JExpression</code>s.<br />
+Let&#8217;s start with one of the simplest:<br />
+<code>JExpression.not();</code> that returns a &#8220;!&#8221; (Who may have guessed it ?)<br />
+In the following modification of the same beloved code, we create a <code>boolean</code> field and inside the constructor we assign to it the <i>negation</i> of a boolean parameter:</p>
+<pre class="java">        String className = "net.cardosi.MyNewClassE";
+	JDefinedClass definedClass = codeModel._class(className);
+	String booleanName = "booleanVar";
+	JFieldVar booleanField = definedClass.field(JMod.PRIVATE, boolean.class, booleanName);
+	JMethod constructorMethod = definedClass.constructor(JMod.PUBLIC);
+	String booleanVarParameter = "booleanVarParameter";
+	constructorMethod.param(boolean.class, booleanVarParameter);
+	JBlock block = constructorMethod.body();
+	block.assign(JExpr._this().ref(booleanName), JExpr.ref(booleanVarParameter).not());
+	codeModel.build(new File("."));</pre>
+<p>Here the result:</p>
+<pre class="java">package net.cardosi;
+
+public class MyNewClassE {
+
+    private boolean booleanVar;
+
+    public MyNewClassE(boolean booleanVarParameter) {
+        this.booleanVar = (!booleanVarParameter);
+    }
+}</pre>
+<p>The line:<br />
+<code>block.assign(JExpr._this().ref(booleanName), JExpr.ref(booleanVarParameter).not());</code></p>
+<ol>
+<li>retrieve a <code>JExpression</code> referencing the <i>booleanVarParameter</i></li>
+<li>apply a &#8220;negation&#8221; to that reference</li>
+<li>assign the resulting value to the field referenced by <i>booleanName</i>.</li>
+</ol>
+<p>Ah! Now we are cooking! And, what about creating an integer variable with a default value, and then give to it the sum of another value and a number ?</p>
+<pre class="java">
+        String className = "net.cardosi.MyNewClassF";
+	JDefinedClass definedClass = codeModel._class(className);
+	String intName = "intVar";
+	JFieldVar intField = (JFieldVar) definedClass.field(JMod.PRIVATE, int.class, intName).init(JExpr.lit(14));
+	JMethod constructorMethod = definedClass.constructor(JMod.PUBLIC);
+	String intVarParameter = "intVarParameter";
+        constructorMethod.param(int.class, intVarParameter);
+	JBlock block = constructorMethod.body();
+	block.assign(JExpr._this().ref(intName), JExpr.ref(intVarParameter).plus(JExpr.lit(35)));
+	codeModel.build(new File("."));
+</pre>
+<p>Here it is</p>
+<pre class="java">
+package net.cardosi;
+
+
+public class MyNewClassF {
+
+    private int intVar = 14;
+
+    public MyNewClassF(int intVarParameter) {
+        this.intVar = (intVarParameter + 35);
+    }
+}
+</pre>
+<p>As a plus I have included the initialization of the variable in its declaration:<br />
+<code>JFieldVar intField = (JFieldVar) definedClass.field(JMod.PRIVATE, int.class, intName).<b>init(JExpr.lit(14))</b>;</code><br />
+Since <code>JExpr.lit()</code> is overloaded for different kind of literals (boolean, double, float, char, int, long, and String), the corresponding type of variables can be initialized that way.</p>
+<p>Maybe I was a little bit pedantic in this section of the tutorial, but in the same time I have the impression to have just scratched the surface of <code>JExpr</code> and <code>JExpression</code>.<br />
+Anyway, I hope it will be enough for you as starting point.<br />
+Next part will deal with <a href="http://blogtech.cardosi.net/2013/12/16/tutorial-java-code-generation-codemodel-generics/" title="Tutorial on Java code generation with CodeModel – Generics">Generics</a>: don&#8217;t miss it!!!</p>
+			</div><!-- .entry-content -->
+<!--Modificated by me on 18/12/2013 -->
+<script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Main -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-9301749830251685"
+     data-ad-slot="1165669451"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script>
+<!--End modification -->
+
+	<footer class="entry-meta">
+		This entry was posted in <a href="http://blogtech.cardosi.net/category/developing/" rel="category tag">Developing</a>, <a href="http://blogtech.cardosi.net/category/developing/java/" rel="category tag">Java</a> by <a href="http://blogtech.cardosi.net/author/"></a>. Bookmark the <a href="http://blogtech.cardosi.net/2013/10/14/tutorial-java-codemodel-jexpression/" title="Permalink to Tutorial on Java code generation with CodeModel &#8211; JExpression" rel="bookmark">permalink</a>.		
+			</footer><!-- .entry-meta -->
+</article><!-- #post-208 -->
+
+						<div id="comments">
+	
+	
+	
+						<span style="position:absolute;left:-100px;width:0;visibility:hidden;display:none;">
+		<a style="visibility:hidden;" href="http://blogtech.cardosi.net?commentid=07539e22c0" rel="nofollow">Add Comment</a>
+		<a style="visibility:hidden;" href="http://blogtech.cardosi.net?loginid=07539e22c0" rel="nofollow">Register</a>
+		</span>	<div style="visibility:hidden;display:none;">
+	<br/>
+	<br/>
+	<br/>
+	<form action="http://blogtech.cardosi.net/wp-comments-post.php" method="post" id="commentform1" style="visibility:hidden;display:none;">
+	<p><input name="author" id="author" value="" size="22"  aria-required="true" type="text">
+	<label for="author"><small>Name (required)</small></label></p>
+
+	<p><input name="email" id="email" value="" size="22"  aria-required="true" type="text">
+	<label for="email"><small>Mail (will not be published) (required)</small></label></p>
+
+	<p><input name="url" id="url" value="" size="22" type="text">
+	<label for="url"><small>Website</small></label></p>
+	<p><textarea name="comment" id="comment" cols="58" rows="10" ></textarea></p>
+
+	<p><!-- 
+	<input name="submit" id="submit" value="Submit Comment" type="submit"> 
+	-->
+	<input name="comment_post_ID" value="208" id="comment_post_ID" type="hidden">
+	<input name="comment_parent" id="comment_parent" value="0" type="hidden">
+	</p>
+
+	<p style="display: none;"><input id="akismet_comment_nonce" name="akismet_comment_nonce" value="5497eab17b" type="hidden"></p>
+	</form>
+	</div>
+				<div id="respond" class="comment-respond">
+				<h3 id="reply-title" class="comment-reply-title">Leave a Reply <small><a rel="nofollow" id="cancel-comment-reply-link" href="/2013/10/14/tutorial-java-codemodel-jexpression/#respond" style="display:none;">Cancel reply</a></small></h3>
+									<p class="must-log-in">You must be <a href="http://blogtech.cardosi.net/wp-login.php?redirect_to=http%3A%2F%2Fblogtech.cardosi.net%2F2013%2F10%2F14%2Ftutorial-java-codemodel-jexpression%2F">logged in</a> to post a comment.</p>												</div><!-- #respond -->
+			
+</div><!-- #comments -->
+
+				
+			</div><!-- #content -->
+		</div><!-- #primary -->
+		<div id="secondary" class="widget-area" role="complementary">
+			<aside id="text-3" class="widget widget_text"><h3 class="widget-title">Google+1</h3>			<div class="textwidget"><!-- Inserisci questo tag nel punto in cui vuoi che sia visualizzato l'elemento pulsante +1. -->
+<div class="g-plusone" data-annotation="inline" data-width="300"></div>
+
+<!-- Inserisci questo tag dopo l'ultimo tag di pulsante +1. -->
+<script type="text/javascript">
+  window.___gcfg = {lang: 'it'};
+
+  (function() {
+    var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true;
+    po.src = 'https://apis.google.com/js/plusone.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s);
+  })();
+</script></div>
+		</aside><aside id="search-2" class="widget widget_search">	<form method="get" id="searchform" action="http://blogtech.cardosi.net/">
+		<label for="s" class="assistive-text">Search</label>
+		<input type="text" class="field" name="s" id="s" placeholder="Search" />
+		<input type="submit" class="submit" name="submit" id="searchsubmit" value="Search" />
+	</form>
+</aside>		<aside id="recent-posts-2" class="widget widget_recent_entries">		<h3 class="widget-title">Recent Posts</h3>		<ul>
+					<li>
+				<a href="http://blogtech.cardosi.net/2014/01/16/tutorial-on-lamj-part-5/">Tutorial on Linux + Asterisk +MySQL + Java &#8211; part 5</a>
+						</li>
+					<li>
+				<a href="http://blogtech.cardosi.net/2014/01/15/tutorial-on-lamj-part-4/">Tutorial on Linux + Asterisk +MySQL + Java &#8211; part 4</a>
+						</li>
+					<li>
+				<a href="http://blogtech.cardosi.net/2014/01/14/tutorial-on-lamj-part-3/">Tutorial on Linux + Asterisk +MySQL + Java &#8211; part 3</a>
+						</li>
+					<li>
+				<a href="http://blogtech.cardosi.net/2014/01/13/tutorial-on-lamj-part-2/">Tutorial on Linux + Asterisk +MySQL + Java &#8211; part 2</a>
+						</li>
+					<li>
+				<a href="http://blogtech.cardosi.net/2013/12/18/tutorial-java-code-generation-codemodel-inheritance/">Tutorial on Java code generation with CodeModel &#8211; Inheritance</a>
+						</li>
+				</ul>
+		</aside><aside id="recent-comments-2" class="widget widget_recent_comments"><h3 class="widget-title">Recent Comments</h3><ul id="recentcomments"><li class="recentcomments"><span class="comment-author-link">gabriolo</span> on <a href="http://blogtech.cardosi.net/2014/01/14/tutorial-on-lamj-part-3/#comment-237">Tutorial on Linux + Asterisk +MySQL + Java &#8211; part 3</a></li><li class="recentcomments"><span class="comment-author-link">gabriolo</span> on <a href="http://blogtech.cardosi.net/2014/01/13/tutorial-on-lamj-part-2/#comment-236">Tutorial on Linux + Asterisk +MySQL + Java &#8211; part 2</a></li><li class="recentcomments"><span class="comment-author-link">Thang Pham</span> on <a href="http://blogtech.cardosi.net/2014/01/13/tutorial-on-lamj-part-2/#comment-235">Tutorial on Linux + Asterisk +MySQL + Java &#8211; part 2</a></li><li class="recentcomments"><span class="comment-author-link">Pouyan</span> on <a href="http://blogtech.cardosi.net/2014/01/14/tutorial-on-lamj-part-3/#comment-234">Tutorial on Linux + Asterisk +MySQL + Java &#8211; part 3</a></li><li class="recentcomments"><span class="comment-author-link">Vladislav</span> on <a href="http://blogtech.cardosi.net/2014/01/16/tutorial-on-lamj-part-5/#comment-230">Tutorial on Linux + Asterisk +MySQL + Java &#8211; part 5</a></li></ul></aside><aside id="archives-2" class="widget widget_archive"><h3 class="widget-title">Archives</h3>		<ul>
+	<li><a href='http://blogtech.cardosi.net/2014/01/'>January 2014</a></li>
+	<li><a href='http://blogtech.cardosi.net/2013/12/'>December 2013</a></li>
+	<li><a href='http://blogtech.cardosi.net/2013/10/'>October 2013</a></li>
+	<li><a href='http://blogtech.cardosi.net/2013/09/'>September 2013</a></li>
+	<li><a href='http://blogtech.cardosi.net/2013/08/'>August 2013</a></li>
+	<li><a href='http://blogtech.cardosi.net/2013/03/'>March 2013</a></li>
+	<li><a href='http://blogtech.cardosi.net/2012/11/'>November 2012</a></li>
+		</ul>
+</aside><aside id="categories-2" class="widget widget_categories"><h3 class="widget-title">Categories</h3>		<ul>
+	<li class="cat-item cat-item-3"><a href="http://blogtech.cardosi.net/category/developing/" >Developing</a>
+</li>
+	<li class="cat-item cat-item-4"><a href="http://blogtech.cardosi.net/category/developing/java/" >Java</a>
+</li>
+	<li class="cat-item cat-item-6"><a href="http://blogtech.cardosi.net/category/system/pbxasterisk/" >PBX/Asterisk</a>
+</li>
+	<li class="cat-item cat-item-5"><a href="http://blogtech.cardosi.net/category/system/" >System</a>
+</li>
+		</ul>
+</aside><aside id="text-4" class="widget widget_text"><h3 class="widget-title">GOOGLEADSENSE</h3>			<div class="textwidget"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Vertical -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:160px;height:600px"
+     data-ad-client="ca-pub-9301749830251685"
+     data-ad-slot="8859315852"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script></div>
+		</aside><aside id="text-6" class="widget widget_text"><h3 class="widget-title">GOOGLEADSENSE</h3>			<div class="textwidget"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Vertical -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:160px;height:600px"
+     data-ad-client="ca-pub-9301749830251685"
+     data-ad-slot="8859315852"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script></div>
+		</aside>		</div><!-- #secondary .widget-area -->
+
+	</div><!-- #main -->
+
+	<footer id="colophon" role="contentinfo">
+
+			
+<div id="supplementary" class="one">
+		<div id="first" class="widget-area" role="complementary">
+		<aside id="text-2" class="widget widget_text"><h3 class="widget-title">GoogleAdSense</h3>			<div class="textwidget"><script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<!-- Secondary -->
+<ins class="adsbygoogle"
+     style="display:inline-block;width:728px;height:90px"
+     data-ad-client="ca-pub-9301749830251685"
+     data-ad-slot="2854872255"></ins>
+<script>
+(adsbygoogle = window.adsbygoogle || []).push({});
+</script></div>
+		</aside><aside id="widget-shinystat-2" class="widget wp-shinystat"><!-- Inizio Codice ShinyStat -->
+<script type="text/javascript" language="JavaScript" src="http://codicepro.shinystat.com/cgi-bin/getcod.cgi?USER=glc&P=1"></script>
+<noscript>
+<a href="http://www.shinystat.com/it" target="_top">
+<img src="http://www.shinystat.com/cgi-bin/shinystat.cgi?USER=glc&P=1" alt="Statistiche web" border="0"></a>
+</noscript>
+<!-- Fine Codice ShinyStat --></aside>	</div><!-- #first .widget-area -->
+	
+	
+	</div><!-- #supplementary -->
+			<div id="site-generator">
+								<a href="http://wordpress.org/" title="Semantic Personal Publishing Platform" rel="generator">Proudly powered by WordPress</a>
+			</div>
+	</footer><!-- #colophon -->
+</div><!-- #page -->
+
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shCore.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushCSharp.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushPhp.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushJScript.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushJava.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushVb.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushSql.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushXml.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushDelphi.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushPython.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushRuby.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushCss.js"></script>
+<script class="javascript" src="http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/shBrushCpp.js"></script>
+<script class="javascript">
+dp.SyntaxHighlighter.ClipboardSwf = 'http://blogtech.cardosi.net/wp-content/plugins/google-syntax-highlighter/Scripts/clipboard.swf';
+dp.SyntaxHighlighter.HighlightAll('code');
+</script>
+
+</body>
+</html>
