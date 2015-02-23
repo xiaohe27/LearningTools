@@ -1,0 +1,6 @@
+Using around pointcut, we can choose not to execute the advised method.
+When monitoring a system, if some method does not violate the property that we monitored,
+and they also not changing the control flow of the program, 
+then we can skip those methods.
+
+And as a result, we may be faster than executing the original system.
