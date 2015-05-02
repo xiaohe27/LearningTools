@@ -1,0 +1,20 @@
+The problem is caused by possible overflow in the integer addition for computing 'mid'.
+The workaround is making use of the distributive law:
+
+int mid = lo/2 + hi/2;
+
+A possible overflow may occur in a situation like the one blow:
+
+Suppose 'n' is a very huge number, say, max integer.
+
+Therefore, when the function findX is invoked and enter the while loop:
+
+In the first iteration, 'lo' is 0, 'hi' is max int; and then 'mid' is computed successfully,
+which is half of the max integer.
+
+If the number 'x' is greater than or equal to 'mid', then 'lo' will be updated to 'mid'+ 1;
+As a result, in the next iteration, 1/2 max int + 1 + max int will be computed, 
+which definitely overflows and a negative number maybe returned as result. Therefore,
+the assertion that 'mid' >= 'lo' will be violated.
+  
+

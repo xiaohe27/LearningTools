@@ -1,0 +1,27 @@
+// a) Write the specification in code for mid (see TODO in the code)
+// b) Explain the bug in the program revealed by the specification. 
+// c) Use Pex to fix the bug and make sure Pex does not complain.
+
+using System;
+using System.Diagnostics;
+
+public class Program {
+  public static int Puzzle(int x, int n) {
+     return FindX(x, i=>i, 0, n);
+  }
+  static int FindX(int x, Func<int, int> f, int lo, int hi) {
+    while (lo < hi) {
+      int mid = (lo/2 + hi/2);
+	  // TODO: specify the assertion that mid is always greater 
+	  // than or equal to lo and strictly less than hi 
+   Debug.Assert(mid >= lo && mid < hi);
+   
+      if (x < f(mid)) { 
+		hi = mid - 1; 
+      } else { 
+		lo = mid + 1; 
+      }
+    }
+    return lo;
+  }
+}
